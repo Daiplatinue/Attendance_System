@@ -40,36 +40,61 @@ import Meeting from './sections/Meeting';
 import MeetingParent from './sections/Meeting-Parent';
 
 
+import Introduction from './sections/Introduction';
+
+
 const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
+
+
         <Route path='/' element={<Home />} />
-        <Route path='/register' element={<Register />} />
-        <Route path='/login' element={<Login />} />
         <Route path='/admin' element={<Admin />} />
         <Route path='/teacher' element={<Teacher />} />
         <Route path='/parent' element={<Parent />} />
+
+
+        <Route path='/register' element={<Register />} />
+        <Route path='/login' element={<Login />} />
+        
+
         <Route path='/todolist' element={<ToDoList />} />
+
+
         <Route path='/allevents' element={<AllEvents />} />
         <Route path='/events-admin' element={<AllEventsAdmin />} />
         <Route path='/events-teacher' element={<AllEventsTeacher />} />
         <Route path='/events-parent' element={<AllEventsParent />} />
+
+
         <Route path='/leaderboard' element={<ViewLeaderboard />} />
         <Route path='/leaderboard-admin' element={<ViewLeaderboardAdmin />} />
         <Route path='/leaderboard-teacher' element={<ViewLeaderboardTeacher />} />
         <Route path='/leaderboard-parent' element={<ViewLeaderboardParent />} />
+
+
         <Route path='/announce' element={<Announcement />} />
         <Route path='/announce-admin' element={<AnnouncementAdmin />} />
         <Route path='/announce-teacher' element={<AnnouncementTeacher />} />
         <Route path='/announce-parent' element={<AnnouncementParent />} />
+
+
         <Route path='/manageAccounts' element={<ManageAccounts />} />
         <Route path='/logs' element={<Logs />} />
+
+
         <Route path='/meeting' element={<Meeting />} />
         <Route path='/meeting-parent' element={<MeetingParent />} />
+
+
+        <Route path='/introduction' element={<Introduction />} />
+
+
       </Routes>
     </BrowserRouter>
   );
 };
+
 
 export default App;

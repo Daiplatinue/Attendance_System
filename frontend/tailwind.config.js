@@ -9,6 +9,9 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			fontFamily: {
+				sans: ['SF Pro Display', 'system-ui', 'sans-serif'],
+			},
 			colors: {
 				customBlue: '#0A0F1C',
 				modalColor: '#161928',
