@@ -1,6 +1,6 @@
-// import axios from 'axios';
-// import React, { useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import React from 'react';
 import { AppSidebar } from "@/components/app-sidebar-admin"
 import {
@@ -16,6 +16,31 @@ import clsx from 'clsx';
 import MyChart from './componentStyles/MyChart';
 
 const Admin: React.FC = () => {
+
+  const navigate = useNavigate();
+
+  const fetchUser = async (): Promise<void> => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:3000/auth/admin', {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (response.status !== 201) {
+        navigate('/introduction');
+      }
+    } catch (err) {
+      navigate('/introduction');
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
   const employees = [
     { id: "SCC-0-002456", name: "Bagus Fikri B.", role: "Student", department: "BS - Information Technology", status: "Active", email: "bagusfikri@gmail.com", phone: "(+63) 248 042 319", joined: "29 Oct, 2018" },
     { id: "SCC-0-000953", name: "Ihdzain A.", role: "Teacher", department: "BS - Hospitality Management", status: "Active", email: "ihdzain@gmail.com", phone: "(+63) 768 082 716", joined: "1 Feb, 2019" },
@@ -251,27 +276,3 @@ const Admin: React.FC = () => {
 };
 
 export default Admin;
-
-// const navigate = useNavigate();
-
-//   const fetchUser = async (): Promise<void> => {
-//     try {
-//       const token = localStorage.getItem('token');
-//       const response = await axios.get('http://localhost:3000/auth/admin', {
-//         headers: {
-//           "Authorization": `Bearer ${token}`
-//         }
-//       });
-
-//       if (response.status !== 201) {
-//         navigate('/login');
-//       }
-//     } catch (err) {
-//       navigate('/login');
-//       console.error(err);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchUser();
-//   }, []);

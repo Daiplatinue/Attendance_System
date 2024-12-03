@@ -14,6 +14,7 @@ export default {
 			},
 			colors: {
 				customBlue: '#0A0F1C',
+				container: '#151922',
 				modalColor: '#161928',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',

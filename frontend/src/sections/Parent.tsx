@@ -22,6 +22,9 @@ import BadgeConsistent from "./componentStyles/Badge-Consistent";
 import BadgeWHonor from "./componentStyles/Badge-WHonor";
 import BadgeWHHonor from "./componentStyles/Badge-WHHonor";
 import BadgeDeans from "./componentStyles/Badge-Deans";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useEffect } from "react";
 
 const attendanceData = [
   { date: 'March 08, 2024', status: 'On Time', checkIn: '08:45', checkOut: '17:10' },
@@ -36,6 +39,29 @@ const attendanceData = [
 ];
 
 const Parent: React.FC = () => {
+
+  const navigate = useNavigate();
+
+  const fetchUser = async (): Promise<void> => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:3000/auth/parent', {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (response.status !== 201) {
+        navigate('/introduction');
+      }
+    } catch (err) {
+      navigate('/introduction');
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -170,8 +196,8 @@ const Parent: React.FC = () => {
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-sm">{item.date}</p>
                       <span className={`text-xs px-2 py-1 rounded ${item.status === 'On Time' ? 'bg-emerald-400/10 text-emerald-400' :
-                          item.status === 'Late' ? 'bg-yellow-400/10 text-yellow-400' :
-                            'bg-red-400/10 text-red-400'
+                        item.status === 'Late' ? 'bg-yellow-400/10 text-yellow-400' :
+                          'bg-red-400/10 text-red-400'
                         }`}>
                         {item.status}
                       </span>
@@ -201,27 +227,3 @@ const Parent: React.FC = () => {
 };
 
 export default Parent;
-
-
-// const navigate = useNavigate();
-
-// const fetchUser = async (): Promise<void> => {
-//   try {
-//     const token = localStorage.getItem('token');
-//     const response = await axios.get('http://localhost:3000/auth/parent', {
-//       headers: {
-//         "Authorization": `Bearer ${token}`
-//       }
-//     });
-//     if (response.status !== 201) {
-//       navigate('/login');
-//     }
-//   } catch (err) {
-//     navigate('/login');
-//     console.error(err);
-//   }
-// };
-
-// useEffect(() => {
-//   fetchUser();
-// }, []);

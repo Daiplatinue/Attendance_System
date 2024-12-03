@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AppSidebar } from "@/components/app-sidebar-teacher"
 import {
     Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
@@ -24,8 +24,34 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ViewAttendanceDialog } from './componentStyles/ViewAttendanceDialog';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function Home() {
+
+    const navigate = useNavigate();
+
+    const fetchUser = async (): Promise<void> => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get('http://localhost:3000/auth/home', {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            if (response.status !== 201) {
+                navigate('/introduction');
+            }
+        } catch (err) {
+            navigate('/introduction');
+            console.error(err);
+        }
+    };
+
+    useEffect(() => {
+        fetchUser();
+    }, []);
+
     const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
     const [selectedSection, setSelectedSection] = useState<Section | null>(null);
     const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -198,7 +224,7 @@ export default function Home() {
                                 </DropdownMenuRadioGroup>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <ViewAttendanceDialog />    
+                        <ViewAttendanceDialog />
                         <ImportStudentsDialog onImport={handleImportStudents} />
                     </div>
                 </div>
@@ -379,28 +405,3 @@ export default function Home() {
         </div>
     );
 }
-
-
-
-// const navigate = useNavigate();
-
-// const fetchUser = async (): Promise<void> => {
-//   try {
-//     const token = localStorage.getItem('token');
-//     const response = await axios.get('http://localhost:3000/auth/home', {
-//       headers: {
-//         "Authorization": `Bearer ${token}`
-//       }
-//     });
-//     if (response.status !== 201) {
-//       navigate('/login');
-//     }
-//   } catch (err) {
-//     navigate('/login');
-//     console.error(err);
-//   }
-// };
-
-// useEffect(() => {
-//   fetchUser();
-// }, []);

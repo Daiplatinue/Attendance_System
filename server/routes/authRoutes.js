@@ -90,6 +90,48 @@ router.get('/home', verifyToken, async (req, res) => {
     }
 })
 
+router.get('/parent', verifyToken, async (req, res) => {
+    try {
+        const db = await connectToDatabase()
+        const [rows] = await db.query('SELECT * FROM accounts WHERE id = ?', [req.userId])
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "User not found" })
+        }
+
+        return res.status(201).json({ user: rows[0] })
+    } catch (err) {
+        return res.status(500).json({ message: "Internal server error" })
+    }
+})
+
+router.get('/teacher', verifyToken, async (req, res) => {
+    try {
+        const db = await connectToDatabase()
+        const [rows] = await db.query('SELECT * FROM accounts WHERE id = ?', [req.userId])
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "User not found" })
+        }
+
+        return res.status(201).json({ user: rows[0] })
+    } catch (err) {
+        return res.status(500).json({ message: "Internal server error" })
+    }
+})
+
+router.get('/admin', verifyToken, async (req, res) => {
+    try {
+        const db = await connectToDatabase()
+        const [rows] = await db.query('SELECT * FROM accounts WHERE id = ?', [req.userId])
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "User not found" })
+        }
+
+        return res.status(201).json({ user: rows[0] })
+    } catch (err) {
+        return res.status(500).json({ message: "Internal server error" })
+    }
+})
+
 export default router;  
 
 

@@ -24,6 +24,9 @@ import BadgeConsistent from "./componentStyles/Badge-Consistent";
 import BadgeWHonor from "./componentStyles/Badge-WHonor";
 import BadgeWHHonor from "./componentStyles/Badge-WHHonor";
 import BadgeDeans from "./componentStyles/Badge-Deans";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useEffect } from "react";
 
 const attendanceData = [
   { date: 'March 08, 2024', status: 'On Time', checkIn: '08:45', checkOut: '17:10' },
@@ -38,6 +41,31 @@ const attendanceData = [
 ];
 
 export default function Home() {
+
+const navigate = useNavigate();
+
+const fetchUser = async (): Promise<void> => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.get('http://localhost:3000/auth/home', {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+    if (response.status !== 201) {
+      navigate('/introduction');
+    }
+  } catch (err) {
+    navigate('/introduction');
+    console.error(err);
+  }
+};
+
+useEffect(() => {
+  fetchUser();
+}, []);
+
+
   return (
     <div>
       <Toaster
@@ -76,10 +104,6 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                 <h1 className="text-xl font-semibold text-white">Attendance Overview</h1>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
-                  <Button className="gap-2 bg-transparent w-full sm:w-auto border-[1px]">
-                    <Download size={16} />
-                    Edit Theme
-                  </Button>
                   <Button className="gap-2 bg-transparent w-full sm:w-auto border-[1px]">
                     <Download size={16} />
                     View Badges
@@ -138,28 +162,28 @@ export default function Home() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-zinc-800 rounded-lg p-4 justify-center items-center flex flex-col">
+                  <div className="bg-container border border-gray-800 rounded-lg p-4 justify-center items-center flex flex-col">
                     <div className="flex items-center gap-2 mb-2">
                       <ChevronsUp className="text-green-400" />
                       <p className="text-xl sm:text-2xl font-semibold text-green-400">1,928,852</p>
                     </div>
                     <p className="text-zinc-400 text-sm text-center">Total Attendance</p>
                   </div>
-                  <div className="bg-zinc-800 rounded-lg p-4 justify-center items-center flex flex-col">
+                  <div className="bg-container border border-gray-800 rounded-lg p-4 justify-center items-center flex flex-col">
                     <div className="flex items-center gap-2 mb-2">
                       <ChevronsDown className="text-red-400" />
                       <p className="text-xl sm:text-2xl font-semibold text-red-400">237,002</p>
                     </div>
                     <p className="text-zinc-400 text-sm text-center">Late Clocked-In</p>
                   </div>
-                  <div className="bg-zinc-800 rounded-lg p-4 justify-center items-center flex flex-col">
+                  <div className="bg-container border border-gray-800 rounded-lg p-4 justify-center items-center flex flex-col">
                     <div className="flex items-center gap-2 mb-2">
                       <ChevronsLeftRightEllipsis className="text-yellow-400" />
                       <p className="text-xl sm:text-2xl font-semibold text-yellow-400">128,725</p>
                     </div>
                     <p className="text-zinc-400 text-sm text-center">Absent</p>
                   </div>
-                  <div className="bg-zinc-800 rounded-lg p-4 justify-center items-center flex flex-col">
+                  <div className="bg-container border border-gray-800  rounded-lg p-4 justify-center items-center flex flex-col">
                     <div className="flex items-center gap-2 mb-2">
                       <p className="text-xl sm:text-2xl font-semibold text-green-400">Batak Pagkatao</p>
                     </div>
@@ -184,7 +208,7 @@ export default function Home() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {attendanceData.map((item, index) => (
-                  <div key={index} className="bg-zinc-800 rounded-lg p-4">
+                  <div key={index} className="bg-container border border-gray-800 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-sm">{item.date}</p>
                       <span className={`text-xs px-2 py-1 rounded ${
@@ -279,26 +303,3 @@ export default function Home() {
 // }
 
 // =======================================================================================================
-
-// const navigate = useNavigate();
-
-// const fetchUser = async (): Promise<void> => {
-//   try {
-//     const token = localStorage.getItem('token');
-//     const response = await axios.get('http://localhost:3000/auth/home', {
-//       headers: {
-//         "Authorization": `Bearer ${token}`
-//       }
-//     });
-//     if (response.status !== 201) {
-//       navigate('/login');
-//     }
-//   } catch (err) {
-//     navigate('/login');
-//     console.error(err);
-//   }
-// };
-
-// useEffect(() => {
-//   fetchUser();
-// }, []);
