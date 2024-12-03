@@ -7,7 +7,7 @@ const reasons = [
     title: "Smart Attendance Tracking",
     subtitle: "Effortless and Accurate",
     description: "Our system leverages cutting-edge technology to automate attendance tracking, making it effortless and accurate.",
-    image: "https://images.unsplash.com/photo-1564981797816-1043664bf78d?auto=format&fit=crop&q=80",
+    image: "https://cdn.pixabay.com/photo/2018/07/14/11/33/earth-3537401_960_720.jpg",
     features: [
       "Real-time attendance monitoring",
       "Facial recognition technology",
@@ -19,7 +19,7 @@ const reasons = [
     title: "Seamless Integration",
     subtitle: "Works with Your Tools",
     description: "Easily integrate with existing school management systems and devices for a unified experience.",
-    image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80",
+    image: "https://cdn.pixabay.com/photo/2024/08/30/19/54/ai-generated-9009917_1280.png",
     features: [
       "Cross-platform compatibility",
       "API-first architecture",
@@ -31,7 +31,7 @@ const reasons = [
     title: "Advanced Analytics",
     subtitle: "Data-Driven Insights",
     description: "Get detailed insights and analytics to make data-driven decisions about attendance patterns.",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80",
+    image: "https://cdn.pixabay.com/photo/2024/02/16/22/45/ai-generated-8578459_1280.jpg",
     features: [
       "Attendance trends",
       "Performance metrics",
@@ -43,7 +43,7 @@ const reasons = [
     title: "Enhanced Security",
     subtitle: "Protected & Reliable",
     description: "State-of-the-art security measures ensure your attendance data is protected and accessible only to authorized personnel.",
-    image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80",
+    image: "https://cdn.pixabay.com/photo/2021/10/11/17/54/technology-6701509_960_720.jpg",
     features: [
       "End-to-end encryption",
       "Role-based access control",
@@ -55,7 +55,7 @@ const reasons = [
     title: "Join Us Today",
     subtitle: "Get Started Now",
     description: "Transform your attendance management system with our innovative solution. Experience the future of educational management.",
-    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80",
+    image: "https://cdn.pixabay.com/photo/2024/04/18/09/08/ai-generated-8703863_1280.jpg",
     features: [
       "Quick setup process",
       "24/7 technical support",
@@ -86,7 +86,7 @@ function ReasonsPagination({ onClose }: ReasonsPaginationProps) {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto text-center">
       <div className="relative">
         <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-[2rem] overflow-hidden backdrop-blur-xl border border-white/10 shadow-2xl">
           <div className="grid lg:grid-cols-2 gap-0">
