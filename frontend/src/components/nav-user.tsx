@@ -55,7 +55,15 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
   const [isSwitchModalOpen, setIsSwitchModalOpen] = useState(false)
-  const [userData, setUserData] = useState<UserData | null>(null)
+  const [userData, setUserData] = useState<UserData>({
+    u_fullname: '',
+    u_role: '',
+    u_department: '',
+    u_year: '',
+    u_email: '',
+    u_contact: '',
+    u_address: ''
+  });
 
   const fetchUser = async (): Promise<void> => {
     try {
@@ -124,10 +132,6 @@ export function NavUser({
       toast.error('Failed to switch account');
     }
   };
-
-  if (!userData) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <>

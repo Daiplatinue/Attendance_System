@@ -1,7 +1,7 @@
-import { Calendar, Clock, MapPin, Tag } from 'lucide-react';
+import { Calendar, Clock, MapPin, Tag, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
-import { Event } from '@/sections/componentStyles/types/events';
+import { Event } from './types/events';
 
 interface EventCardProps {
   event: Event;
@@ -22,7 +22,23 @@ export function EventCard({ event, onViewDetails }: EventCardProps) {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const formatTime = (timeString: string) => {
+    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   const truncateDescription = (text: string, maxLength: number) => {
+    if (!text) return '';
     if (text.length <= maxLength) return text;
     return text.slice(0, maxLength) + '...';
   };
@@ -52,8 +68,8 @@ export function EventCard({ event, onViewDetails }: EventCardProps) {
           )}
         </div>
         <Avatar className='h-10 w-10 ring-2 ring-white/10 flex-shrink-0'>
-          <AvatarImage src={event.avatarUrl || `https://api.dicebear.com/7.x/shapes/svg?seed=${event.id}`} />
-          <AvatarFallback>EV</AvatarFallback>
+          <AvatarImage src={event.avatarUrl} alt={event.name} />
+          <AvatarFallback>{event.name.slice(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
       </div>
 
@@ -68,20 +84,26 @@ export function EventCard({ event, onViewDetails }: EventCardProps) {
         </div>
         <div className='flex items-center gap-2 text-gray-400'>
           <Calendar className="w-4 h-4 flex-shrink-0" />
-          <span className="truncate">{event.startDate} - {event.endDate}</span>
+          <span className="truncate">
+            {formatDate(event.startDate)} - {formatDate(event.endDate)}
+          </span>
         </div>
         <div className='flex items-center gap-2 text-gray-400'>
           <Clock className="w-4 h-4 flex-shrink-0" />
-          <span className="truncate">{event.startTime} - {event.endTime}</span>
+          <span className="truncate">
+            {formatTime(event.startTime)} - {formatTime(event.endTime)}
+          </span>
         </div>
         <div className='flex items-center gap-2 text-gray-400'>
-          <Calendar className="w-4 h-4 flex-shrink-0" />
+          <Users className="w-4 h-4 flex-shrink-0" />
           <span className="truncate">{event.departments.join(', ')}</span>
         </div>
       </div>
 
       <div className='mt-4 pt-4 border-t border-white/10'>
-        <p className='text-sm text-gray-400 line-clamp-3'>{truncateDescription(event.description, 150)}</p>
+        <p className='text-sm text-gray-400 line-clamp-3'>
+          {truncateDescription(event.description, 150)}
+        </p>
       </div>
 
       <div className='mt-4 flex justify-end'>

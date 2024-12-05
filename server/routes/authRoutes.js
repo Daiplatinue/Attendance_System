@@ -8,6 +8,20 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
 
+const verifyToken = async (req, res, next) => {
+    try {
+        const token = req.headers['authorization'].split(' ')[1];
+        if (!token) {
+            return res.status(403).json({ message: "No Token Provided" })
+        }
+        const decoded = jwt.verify(token, process.env.JWT_KEY)
+        req.userId = decoded.id;
+        next()
+    } catch (err) {
+        return res.status(500).json({ message: "Unauthorized" })
+    }
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -26,6 +40,35 @@ const profilesDir = path.join(__dirname, '../../profiles');
 if (!fs.existsSync(profilesDir)) {
     fs.mkdirSync(profilesDir, { recursive: true });
 }
+
+router.get('/attendanceSummary', verifyToken, async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const [rows] = await db.query(
+            `SELECT 
+                a_total AS totalAttendance, 
+                a_late AS lateClockedIn, 
+                a_absent AS absent, 
+                a_predicate AS predicate 
+             FROM attendance_tb 
+             WHERE u_id = ?`,
+            [req.userId]
+        );
+
+        console.log('Database response:', rows); // Debugging: Log the database response
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "Attendance data not found" });
+        }
+
+        res.status(200).json(rows[0]);
+    } catch (error) {
+        console.error('Error fetching attendance summary:', error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+
 
 router.post('/fetchProfile', async (req, res) => {
     try {
@@ -141,31 +184,55 @@ router.post('/createAdmin', async (req, res) => {
             return res.status(409).json({ message: "User already exists" });
         }
 
-        const [result] = await db.query(
-            `INSERT INTO acc_tb (
-                u_fullname, u_role, u_department, u_year,
-                u_email, u_contact, u_address, u_password,
-                u_profile
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                u_fullname, u_role, u_department, u_year,
-                u_email, u_contact, u_address, u_password,
-                'default.jpg'
-            ]
-        );
+        await db.beginTransaction();
 
-        const qrCodeFilename = await generateQRCode(result.insertId);
-        
-        await db.query(
-            'UPDATE acc_tb SET u_qr = ? WHERE u_id = ?',
-            [qrCodeFilename, result.insertId]
-        );
+        try {
+            const currentDate = new Date().toISOString().split('T')[0];
 
-        return res.status(201).json({ 
-            message: "User created successfully",
-            userId: result.insertId,
-            qrCode: `/profiles/${qrCodeFilename}` 
-        });
+            const [result] = await db.query(
+                `INSERT INTO acc_tb (
+                    u_fullname, u_role, u_department, u_year,
+                    u_email, u_contact, u_address, u_password,
+                    u_profile, u_date
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    u_fullname, u_role, u_department, u_year,
+                    u_email, u_contact, u_address, u_password,
+                    'default.jpg', currentDate
+                ]
+            );
+
+            await db.query(
+                `INSERT INTO attendance_tb (
+                    u_id, a_total, a_late, a_absent, a_predicate
+                ) VALUES (?, ?, ?, ?, ?)`,
+                [
+                    result.insertId, 
+                    0, 
+                    0, 
+                    0, 
+                    'New Student'
+                ]
+            );
+
+            const qrCodeFilename = await generateQRCode(result.insertId);
+            
+            await db.query(
+                'UPDATE acc_tb SET u_qr = ? WHERE u_id = ?',
+                [qrCodeFilename, result.insertId]
+            );
+
+            await db.commit();
+
+            return res.status(201).json({ 
+                message: "User created successfully",
+                userId: result.insertId,
+                qrCode: `/profiles/${qrCodeFilename}` 
+            });
+        } catch (error) {
+            await db.rollback();
+            throw error;
+        }
     } catch (err) {
         console.error("Registration error:", err);
         return res.status(500).json({ message: "Internal server error" });
@@ -220,29 +287,20 @@ router.post('/login', async (req, res) => {
     }
 });
 
-const verifyToken = async (req, res, next) => {
-    try {
-        const token = req.headers['authorization'].split(' ')[1];
-        if (!token) {
-            return res.status(403).json({ message: "No Token Provided" })
-        }
-        const decoded = jwt.verify(token, process.env.JWT_KEY)
-        req.userId = decoded.id;
-        next()
-    } catch (err) {
-        return res.status(500).json({ message: "Unauthorized" })
-    }
-}
-
 router.get('/home', verifyToken, async (req, res) => {
     try {
         const db = await connectToDatabase()
         const [rows] = await db.query('SELECT * FROM acc_tb WHERE u_id = ?', [req.userId])
+       
         if (rows.length === 0) {
             return res.status(404).json({ message: "User not found" })
         }
 
         const user = {...rows[0]};
+
+        console.log(rows);
+        console.log(user);
+
         user.formattedId = `SCC-0-${user.u_id.toString().padStart(6, '0')}`;
 
         return res.status(201).json({ user })

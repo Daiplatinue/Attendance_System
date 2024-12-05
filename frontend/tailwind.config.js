@@ -81,6 +81,7 @@ export default {
 				animation: {
 					'slide-up': 'slide-up 0.5s ease-out',
 					'scale-in': 'scale-in 0.3s ease-out',
+					'spin-slow': 'spin-slow 3s linear infinite',
 				},
 				boxShadow: {
 					'glow': '0 0 20px rgba(59, 130, 246, 0.5)',

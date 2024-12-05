@@ -17,53 +17,71 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Trophy, Search, Crown, Award, Calendar, ChevronUp, ChevronDown, Minus } from 'lucide-react'
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
+import { useEffect, useState } from "react"
+import axios from "axios"
+
+interface Student {
+    u_id: string;
+    u_fullname: string;
+    u_department: string;
+    u_profile: string;
+    a_total: number;
+    previousRank?: number;
+    currentRank?: number;
+    trend?: string;
+    difference?: number;
+}
+
+interface Rankings {
+    [key: string]: number;
+}
 
 export default function ViewLeaderboard() {
+    const [leaderboardData, setLeaderboardData] = useState<Student[]>([]);
+    const [error, setError] = useState("");
+    const [previousRankings, setPreviousRankings] = useState<Rankings>({});
 
-    const leaderboardData = [
-        {
-            id: "SCC-0-002456",
-            name: "Bagus Fikri B.",
-            attendance: [1, 928, 852],
-            department: "BS - Information Technology",
-            trend: "up",
-            difference: 5
-        },
-        {
-            id: "SCC-0-000953",
-            name: "Ihdzain A.",
-            attendance: [1, 575, 354],
-            department: "BS - Hospitality Management",
-            trend: "down",
-            difference: 6
-        },
-        {
-            id: "SCC-0-010534",
-            name: "Multi Hidayat Y.",
-            attendance: [992, 358],
-            department: "BS - Tourism Management",
-            trend: "same",
-            difference: 0
-        },
-        {
-            id: "SCC-0-010535",
-            name: "John Doe",
-            attendance: [885, 132],
-            department: "BS - Information Technology",
-            trend: "down",
-            difference: 3
-        },
-        {
-            id: "SCC-0-010536",
-            name: "Jane Smith",
-            attendance: [456, 902],
-            department: "BS - Tourism Management",
-            trend: "up",
-            difference: 4
-        },
-    ];
+    useEffect(() => {
+        const fetchLeaderboardData = async () => {
+            try {
+                const response = await axios.get('http://localhost:3000/api/leaderboard');
+                const sortedData = response.data.sort((a: Student, b: Student) => b.a_total - a.a_total);
+                
+                // Calculate trends based on position changes
+                const dataWithTrends = sortedData.map((student: Student, currentIndex: number) => {
+                    const previousRank = previousRankings[student.u_id] || currentIndex;
+                    const rankDifference = previousRank - currentIndex;
+                    
+                    return {
+                        ...student,
+                        previousRank: previousRank,
+                        currentRank: currentIndex,
+                        trend: rankDifference === 0 ? "same" : rankDifference < 0 ? "down" : "up",
+                        difference: Math.abs(rankDifference)
+                    };
+                });
 
-    const getRankColor = (index: number) => {
+                // Update previous rankings for next comparison
+                const newRankings: Rankings = {};
+                dataWithTrends.forEach((student: Student, index: number) => {
+                    newRankings[student.u_id] = index;
+                });
+                setPreviousRankings(newRankings);
+                
+                setLeaderboardData(dataWithTrends);
+            } catch (err) {
+                setError("Failed to fetch leaderboard data");
+            }
+        };
+
+        // Fetch data initially and then every 30 seconds
+        fetchLeaderboardData();
+        const interval = setInterval(fetchLeaderboardData, 30000);
+
+        return () => clearInterval(interval);
+    }, [previousRankings]);
+
+    const getRankColor = (index: number): string => {
         switch (index) {
             case 0:
                 return "text-green-400";
@@ -127,6 +145,12 @@ export default function ViewLeaderboard() {
         })
     };
 
+    if (error) {
+        return <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
+            <div className="text-red-400">{error}</div>
+        </div>;
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
             <SidebarProvider>
@@ -185,89 +209,94 @@ export default function ViewLeaderboard() {
                             {/* Top 3 Podium */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 relative">
                                 {/* Silver - 2nd Place */}
-                                <motion.div
-                                    custom={1}
-                                    initial="hidden"
-                                    animate="visible"
-                                    variants={podiumVariants}
-                                    className="md:mt-8"
-                                >
-                                    <div className="flex flex-col items-center p-6 bg-gradient-to-b from-gray-300/20 to-white/5 rounded-2xl border border-white/20 transform hover:scale-105 transition-all duration-500 hover:shadow-xl">
-                                        <div className="mb-4 animate-bounce">
-                                            {getTrophyIcon(1)}
+                                {leaderboardData[1] && (
+                                    <motion.div
+                                        custom={1}
+                                        initial="hidden"
+                                        animate="visible"
+                                        variants={podiumVariants}
+                                        className="md:mt-8"
+                                    >
+                                        <div className="flex flex-col items-center p-6 bg-gradient-to-b from-gray-300/20 to-white/5 rounded-2xl border border-white/20 transform hover:scale-105 transition-all duration-500 hover:shadow-xl">
+                                            <div className="mb-4 animate-bounce">
+                                                {getTrophyIcon(1)}
+                                            </div>
+                                            <Avatar className="h-20 w-20 mb-4 ring-4 ring-gray-300 shadow-2xl">
+                                                <AvatarImage src={leaderboardData[1].u_profile || `https://api.dicebear.com/7.x/avataaars/svg?seed=${leaderboardData[1].u_fullname}`} />
+                                                <AvatarFallback>{leaderboardData[1].u_fullname.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <p className="text-white font-bold text-lg text-center mb-1">{leaderboardData[1].u_fullname}</p>
+                                            <p className="text-gray-400 text-sm mb-3">{leaderboardData[1].u_department}</p>
+                                            <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
+                                                <span className="text-gray-300 font-semibold">{leaderboardData[1].a_total}</span>
+                                                <span className="text-gray-400 text-sm">days</span>
+                                            </div>
+                                            <div className="mt-2">
+                                                {getTrendIcon(leaderboardData[1].trend || "same", leaderboardData[1].difference || 0)}
+                                            </div>
                                         </div>
-                                        <Avatar className="h-20 w-20 mb-4 ring-4 ring-gray-300 shadow-2xl">
-                                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${leaderboardData[1].name}`} />
-                                            <AvatarFallback>{leaderboardData[1].name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <p className="text-white font-bold text-lg text-center mb-1">{leaderboardData[1].name}</p>
-                                        <p className="text-gray-400 text-sm mb-3">{leaderboardData[1].department}</p>
-                                        <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
-                                            <span className="text-gray-300 font-semibold"> {leaderboardData[1].attendance}</span>
-
-                                            <span className="text-gray-400 text-sm">days</span>
-                                        </div>
-                                        <div className="mt-2">
-                                            {getTrendIcon(leaderboardData[1].trend, leaderboardData[1].difference)}
-                                        </div>
-                                    </div>
-                                </motion.div>
+                                    </motion.div>
+                                )}
 
                                 {/* Gold - 1st Place */}
-                                <motion.div
-                                    custom={0}
-                                    initial="hidden"
-                                    animate="visible"
-                                    variants={podiumVariants}
-                                    className="md:order-1"
-                                >
-                                    <div className="flex flex-col items-center p-8 bg-gradient-to-b from-yellow-400/20 via-yellow-600/10 to-yellow-900/5 rounded-2xl border border-yellow-400/30 transform hover:scale-105 transition-all duration-500 hover:shadow-2xl shadow-yellow-400/20">
-                                        <div className="mb-4 animate-bounce">
-                                            {getTrophyIcon(0)}
+                                {leaderboardData[0] && (
+                                    <motion.div
+                                        custom={0}
+                                        initial="hidden"
+                                        animate="visible"
+                                        variants={podiumVariants}
+                                        className="md:order-1"
+                                    >
+                                        <div className="flex flex-col items-center p-8 bg-gradient-to-b from-yellow-400/20 via-yellow-600/10 to-yellow-900/5 rounded-2xl border border-yellow-400/30 transform hover:scale-105 transition-all duration-500 hover:shadow-2xl shadow-yellow-400/20">
+                                            <div className="mb-4 animate-bounce">
+                                                {getTrophyIcon(0)}
+                                            </div>
+                                            <Avatar className="h-24 w-24 mb-4 ring-4 ring-yellow-400 shadow-2xl">
+                                                <AvatarImage src={leaderboardData[0].u_profile || `https://api.dicebear.com/7.x/avataaars/svg?seed=${leaderboardData[0].u_fullname}`} />
+                                                <AvatarFallback>{leaderboardData[0].u_fullname.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <p className="text-yellow-400 font-bold text-xl text-center mb-1">{leaderboardData[0].u_fullname}</p>
+                                            <p className="text-yellow-300/80 text-sm mb-4">{leaderboardData[0].u_department}</p>
+                                            <div className="flex items-center gap-2 bg-yellow-400/20 px-5 py-2.5 rounded-full">
+                                                <span className="text-yellow-400 font-bold text-lg">{leaderboardData[0].a_total}</span>
+                                                <span className="text-yellow-300/80 text-sm">days</span>
+                                            </div>
+                                            <div className="mt-2">
+                                                {getTrendIcon(leaderboardData[0].trend || "same", leaderboardData[0].difference || 0)}
+                                            </div>
                                         </div>
-                                        <Avatar className="h-24 w-24 mb-4 ring-4 ring-yellow-400 shadow-2xl">
-                                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${leaderboardData[0].name}`} />
-                                            <AvatarFallback>{leaderboardData[0].name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <p className="text-yellow-400 font-bold text-xl text-center mb-1">{leaderboardData[0].name}</p>
-                                        <p className="text-yellow-300/80 text-sm mb-4">{leaderboardData[0].department}</p>
-                                        <div className="flex items-center gap-2 bg-yellow-400/20 px-5 py-2.5 rounded-full">
-                                            <span className="text-yellow-400 font-bold text-lg">{leaderboardData[0].attendance}</span>
-                                            <span className="text-yellow-300/80 text-sm">days</span>
-                                        </div>
-                                        <div className="mt-2">
-                                            {getTrendIcon(leaderboardData[0].trend, leaderboardData[0].difference)}
-                                        </div>
-                                    </div>
-                                </motion.div>
+                                    </motion.div>
+                                )}
 
                                 {/* Bronze - 3rd Place */}
-                                <motion.div
-                                    custom={2}
-                                    initial="hidden"
-                                    animate="visible"
-                                    variants={podiumVariants}
-                                    className="md:mt-16"
-                                >
-                                    <div className="flex flex-col items-center p-6 bg-gradient-to-b from-amber-600/20 to-amber-800/5 rounded-2xl border border-amber-600/20 transform hover:scale-105 transition-all duration-500 hover:shadow-xl">
-                                        <div className="mb-4 animate-bounce">
-                                            {getTrophyIcon(2)}
+                                {leaderboardData[2] && (
+                                    <motion.div
+                                        custom={2}
+                                        initial="hidden"
+                                        animate="visible"
+                                        variants={podiumVariants}
+                                        className="md:mt-16"
+                                    >
+                                        <div className="flex flex-col items-center p-6 bg-gradient-to-b from-amber-600/20 to-amber-800/5 rounded-2xl border border-amber-600/20 transform hover:scale-105 transition-all duration-500 hover:shadow-xl">
+                                            <div className="mb-4 animate-bounce">
+                                                {getTrophyIcon(2)}
+                                            </div>
+                                            <Avatar className="h-20 w-20 mb-4 ring-4 ring-amber-600 shadow-2xl">
+                                                <AvatarImage src={leaderboardData[2].u_profile || `https://api.dicebear.com/7.x/avataaars/svg?seed=${leaderboardData[2].u_fullname}`} />
+                                                <AvatarFallback>{leaderboardData[2].u_fullname.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <p className="text-white font-bold text-lg text-center mb-1">{leaderboardData[2].u_fullname}</p>
+                                            <p className="text-amber-400/80 text-sm mb-3">{leaderboardData[2].u_department}</p>
+                                            <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
+                                                <span className="text-amber-400 font-semibold">{leaderboardData[2].a_total}</span>
+                                                <span className="text-amber-400/80 text-sm">days</span>
+                                            </div>
+                                            <div className="mt-2">
+                                                {getTrendIcon(leaderboardData[2].trend || "same", leaderboardData[2].difference || 0)}
+                                            </div>
                                         </div>
-                                        <Avatar className="h-20 w-20 mb-4 ring-4 ring-amber-600 shadow-2xl">
-                                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${leaderboardData[2].name}`} />
-                                            <AvatarFallback>{leaderboardData[2].name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <p className="text-white font-bold text-lg text-center mb-1">{leaderboardData[2].name}</p>
-                                        <p className="text-amber-400/80 text-sm mb-3">{leaderboardData[2].department}</p>
-                                        <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full">
-                                            <span className="text-amber-400 font-semibold">{leaderboardData[2].attendance}</span>
-                                            <span className="text-amber-400/80 text-sm">days</span>
-                                        </div>
-                                        <div className="mt-2">
-                                            {getTrendIcon(leaderboardData[2].trend, leaderboardData[2].difference)}
-                                        </div>
-                                    </div>
-                                </motion.div>
+                                    </motion.div>
+                                )}
                             </div>
 
                             {/* Leaderboard Table */}
@@ -283,9 +312,9 @@ export default function ViewLeaderboard() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/10">
-                                        {leaderboardData.map((student, index) => (
+                                        {leaderboardData.map((student: Student, index: number) => (
                                             <motion.tr
-                                                key={student.id}
+                                                key={student.u_id}
                                                 initial={{ opacity: 0, y: 20 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: index * 0.1 }}
@@ -301,31 +330,27 @@ export default function ViewLeaderboard() {
                                                 <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center">
                                                         <Avatar className="h-10 w-10 ring-2 ring-white/10">
-                                                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${student.name}`} />
-                                                            <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                                                            <AvatarImage src={student.u_profile || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.u_fullname}`} />
+                                                            <AvatarFallback>{student.u_fullname.charAt(0)}</AvatarFallback>
                                                         </Avatar>
                                                         <div className="ml-4">
-                                                            <div className="text-sm font-medium text-white">{student.name}</div>
-                                                            <div className="text-sm text-gray-400">{student.id}</div>
+                                                            <div className="text-sm font-medium text-white">{student.u_fullname}</div>
+                                                            <div className="text-sm text-gray-400">SCC-0-{student.u_id.toString().padStart(6, '0')}</div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-300">{student.department}</td>
+                                                <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-300">{student.u_department}</td>
                                                 <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center gap-4">
                                                         <div className="flex items-center gap-2 min-w-[100px]">
                                                             <Calendar className="w-4 h-4 text-blue-400" />
-                                                            <span className="text-white font-medium">
-                                                                {Array.isArray(student.attendance)
-                                                                    ? student.attendance.join(",")
-                                                                    : student.attendance}
-                                                            </span>
+                                                            <span className="text-white font-medium">{student.a_total}</span>
                                                             <span className="text-gray-400 text-sm">days</span>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                                                    {getTrendIcon(student.trend, student.difference)}
+                                                    {getTrendIcon(student.trend || "same", student.difference || 0)}
                                                 </td>
                                             </motion.tr>
                                         ))}

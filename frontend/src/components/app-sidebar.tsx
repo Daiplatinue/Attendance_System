@@ -33,7 +33,15 @@ interface UserData {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<UserData>({
+    u_fullname: '',
+    u_role: '',
+    u_department: '',
+    u_year: '',
+    u_email: '',
+    u_contact: '',
+    u_address: ''
+  });
 
   const fetchUser = async (): Promise<void> => {
     try {
@@ -66,8 +74,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const data = {
     user: {
-      name: userData?.u_fullname || 'Loading...',
-      email: userData?.u_email || 'Loading...',
+      name: userData.u_fullname,
+      email: userData.u_email,
       avatar,
     },
     calendars: [
@@ -83,10 +91,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       },
     ],
   };
-
-  if (!userData) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <Sidebar {...props}>

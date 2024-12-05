@@ -1,27 +1,63 @@
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { FileText, Image as ImageIcon, X } from 'lucide-react'
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { FileText, Image as ImageIcon, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface CreateAnnouncementProps {
   onClose: () => void;
   onSubmit: (announcement: any) => void;
 }
 
+const DEPARTMENT_TYPES = [
+  'ADMIN OFFICE',
+  'SAO OFFICE',
+  'REGISTRAR OFFICE',
+  'GUIDANCE OFFICE',
+  'ACADEMIC OFFICE'
+];
+
 const CreateAnnouncement: React.FC<CreateAnnouncementProps> = ({ onClose, onSubmit }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [department, setDepartment] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      title,
-      content,
-      attachments,
-      date: new Date().toISOString(),
+    
+    const formData = new FormData();
+    formData.append('am_title', title);
+    formData.append('am_desc', content);
+    formData.append('am_department', department);
+    
+    attachments.forEach(file => {
+      formData.append('attachments', file);
     });
-    onClose();
+
+    try {
+      const response = await fetch('http://localhost:3000/announcements', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        onSubmit({
+          title,
+          content,
+          department,
+          attachments,
+          date: new Date().toISOString(),
+          id: result.id
+        });
+        onClose();
+      } else {
+        console.error('Failed to create announcement');
+      }
+    } catch (error) {
+      console.error('Error creating announcement:', error);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,6 +92,19 @@ const CreateAnnouncement: React.FC<CreateAnnouncementProps> = ({ onClose, onSubm
               />
             </div>
           </div>
+
+          <Select value={department} onValueChange={setDepartment}>
+            <SelectTrigger className="w-full mb-4">
+              <SelectValue placeholder="Select Department" />
+            </SelectTrigger>
+            <SelectContent>
+              {DEPARTMENT_TYPES.map((dept) => (
+                <SelectItem key={dept} value={dept}>
+                  {dept}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <textarea
             placeholder="What would you like to announce?"
@@ -105,7 +154,12 @@ const CreateAnnouncement: React.FC<CreateAnnouncementProps> = ({ onClose, onSubm
             </div>
             <div className='flex gap-2'>
               <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-              <Button type="submit" disabled={!title || !content}>Post</Button>
+              <Button 
+                type="submit" 
+                disabled={!title || !content || !department}
+              >
+                Post
+              </Button>
             </div>
           </div>
         </form>

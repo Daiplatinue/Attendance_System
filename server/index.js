@@ -8,6 +8,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
+import leaderboardRoutes from './routes/leaderboard.js';
+import eventRouter from './routes/events.js'
+import announcementRouter from './routes/announcement.js';
+
 dotenv.config()
 
 const app = express()
@@ -19,9 +23,13 @@ app.use(cors({
     origin: "*",
     methods: ["GET", "POST"]
 }))
+
 app.use(express.json())
 app.use('/auth', authRouter)
+app.use('/announcements', announcementRouter); // Mount announcement routes 
+app.use('/api', eventRouter); // Mount event routes under /api
 app.use('/profiles', express.static(path.join(__dirname, 'profiles')));
+app.use(leaderboardRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

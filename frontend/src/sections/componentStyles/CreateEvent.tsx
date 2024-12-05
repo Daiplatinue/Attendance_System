@@ -5,7 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Event } from '@/sections/componentStyles/types/events';
+import { Event } from './types/events';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 interface CreateEventModalProps {
   isOpen: boolean;
@@ -28,26 +30,44 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
     avatarUrl: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      ...formData,
-      status: 'Upcoming',
-    });
-    onClose();
-    setFormData({
-      name: '',
-      type: '',
-      location: '',
-      startDate: '',
-      endDate: '',
-      startTime: '',
-      endTime: '',
-      departments: [],
-      organizer: '',
-      description: '',
-      avatarUrl: '',
-    });
+    setIsSubmitting(true);
+
+    try {
+      const eventData = {
+        ...formData,
+        status: 'Upcoming',
+      };
+
+      const response = await axios.post('http://localhost:3000/api/createEvent', eventData);
+
+      if (response.status === 201) {
+        toast.success('Event created successfully!');
+        onSubmit(response.data.event);
+        onClose();
+        setFormData({
+          name: '',
+          type: '',
+          location: '',
+          startDate: '',
+          endDate: '',
+          startTime: '',
+          endTime: '',
+          departments: [],
+          organizer: '',
+          description: '',
+          avatarUrl: '',
+        });
+      }
+    } catch (error: any) {
+      console.error('Error creating event:', error);
+      toast.error(error.response?.data?.message || 'Failed to create event. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -71,7 +91,11 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="type">Type</Label>
-              <Select onValueChange={(value) => setFormData({ ...formData, type: value })}>
+              <Select 
+                value={formData.type}
+                onValueChange={(value) => setFormData({ ...formData, type: value })}
+                required
+              >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
@@ -116,6 +140,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
                 value={formData.endDate}
                 onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                 className="bg-white/5 border-white/10 text-white"
+                min={formData.startDate}
                 required
               />
             </div>
@@ -148,11 +173,14 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="departments">Departments (comma-separated)</Label>
+            <Label htmlFor="departments">Departments</Label>
             <Input
               id="departments"
               value={formData.departments.join(', ')}
-              onChange={(e) => setFormData({ ...formData, departments: e.target.value.split(',').map(d => d.trim()) })}
+              onChange={(e) => setFormData({ 
+                ...formData, 
+                departments: e.target.value.split(',').map(d => d.trim()).filter(Boolean)
+              })}
               className="bg-white/5 border-white/10 text-white"
               placeholder="IT, CS, Engineering"
               required
@@ -193,8 +221,22 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit">Create Event</Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose} 
+              disabled={isSubmitting}
+              className="bg-white/5 hover:bg-white/10"
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              {isSubmitting ? 'Creating...' : 'Create Event'}
+            </Button>
           </div>
         </form>
       </DialogContent>
