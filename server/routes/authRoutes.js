@@ -1,30 +1,173 @@
-// import bcrypt from 'bcrypt'
+import express from 'express';
+import { connectToDatabase } from '../lib/db.js';
+import jwt from 'jsonwebtoken';
+import { upload } from '../lib/multerConfig.js';
+import { generateQRCode } from '../lib/qrCodeGenerator.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import fs from 'fs';
 
-import express from 'express'
-import { connectToDatabase } from '../lib/db.js'
-import jwt from 'jsonwebtoken'
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const router = express.Router()
 
+const validateAndParseStudentId = (sccId) => {
+    const pattern = /^SCC-0-(\d{6})$/;
+    const match = sccId.match(pattern);
+    if (!match) {
+        return null;
+    }
+    return parseInt(match[1], 10);
+}
+
+const profilesDir = path.join(__dirname, '../../profiles');
+if (!fs.existsSync(profilesDir)) {
+    fs.mkdirSync(profilesDir, { recursive: true });
+}
+
+router.post('/fetchProfile', async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+
+        const db = await connectToDatabase();
+        const [rows] = await db.query('SELECT u_profile FROM acc_tb WHERE u_id = ?', [userId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ profileImage: rows[0].u_profile });
+    } catch (error) {
+        console.error('Fetch profile error:', error);
+        res.status(500).json({ message: "Error fetching profile", error: error.message });
+    }
+});
+
+
+router.post('/upload', upload.single('profile'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
+
+        const db = await connectToDatabase();
+        const userId = req.body.userId;
+        const imagePath = req.file.filename;
+
+        await db.query('UPDATE acc_tb SET u_profile = ? WHERE u_id = ?', [imagePath, userId]);
+        
+        return res.status(200).json({ 
+            status: "Success",
+            imagePath: imagePath
+        });
+    } catch (error) {
+        console.error('Upload error:', error);
+        return res.status(500).json({ 
+            message: "Error uploading file",
+            error: error.message 
+        });
+    }
+});
+
 router.post('/register', async (req, res) => {
     const { fullname, contact, password } = req.body;
-    console.log("Received password:", password);
+    console.log("Received registration data:", { fullname, contact });
+    
     try {
         const db = await connectToDatabase();
-        const [rows] = await db.query('SELECT * FROM accounts WHERE contact = ?', [contact]);
+        const [existingUsers] = await db.query('SELECT * FROM acc_tb WHERE u_contact = ?', [contact]);
 
-        if (rows.length > 0) {
+        if (existingUsers.length > 0) {
             return res.status(409).json({ message: "User already exists" });
         }
 
-        await db.query(
-            "INSERT INTO accounts (fullname, contact, password, type) VALUES (?, ?, ?, 'student')",
-            [fullname, contact, password] // Store the plain text password
+        const [result] = await db.query(
+            `INSERT INTO acc_tb (
+                u_fullname, 
+                u_role, 
+                u_department, 
+                u_year, 
+                u_email, 
+                u_contact, 
+                u_address, 
+                u_password, 
+                u_qr, 
+                u_profile
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                fullname,
+                'parent',
+                'N/A',
+                'N/A',
+                'N/A',
+                contact,
+                'N/A',
+                password,
+                'N/A',
+                'default.jpg'
+            ]
         );
 
-        return res.status(201).json({ message: "User created successfully" });
+        return res.status(201).json({ 
+            message: "User created successfully",
+            userId: result.insertId
+        });
     } catch (err) {
-        console.error(err);
+        console.error("Registration error:", err);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+router.post('/createAdmin', async (req, res) => {
+    const { 
+        u_fullname, u_role, u_department, u_year, 
+        u_email, u_contact, u_address, u_password 
+    } = req.body;
+    
+    try {
+        const db = await connectToDatabase();
+        
+        const [existingUsers] = await db.query(
+            'SELECT * FROM acc_tb WHERE u_contact = ?', 
+            [u_contact]
+        );
+
+        if (existingUsers.length > 0) {
+            return res.status(409).json({ message: "User already exists" });
+        }
+
+        const [result] = await db.query(
+            `INSERT INTO acc_tb (
+                u_fullname, u_role, u_department, u_year,
+                u_email, u_contact, u_address, u_password,
+                u_profile
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                u_fullname, u_role, u_department, u_year,
+                u_email, u_contact, u_address, u_password,
+                'default.jpg'
+            ]
+        );
+
+        const qrCodeFilename = await generateQRCode(result.insertId);
+        
+        await db.query(
+            'UPDATE acc_tb SET u_qr = ? WHERE u_id = ?',
+            [qrCodeFilename, result.insertId]
+        );
+
+        return res.status(201).json({ 
+            message: "User created successfully",
+            userId: result.insertId,
+            qrCode: `/profiles/${qrCodeFilename}` 
+        });
+    } catch (err) {
+        console.error("Registration error:", err);
         return res.status(500).json({ message: "Internal server error" });
     }
 });
@@ -35,32 +178,47 @@ router.post('/login', async (req, res) => {
     console.log('Received Password:', password);
     
     try {
+        const numericId = validateAndParseStudentId(studentId);
+        if (numericId === null) {
+            return res.status(400).json({ message: "Invalid student ID format. Please use format: SCC-0-XXXXXX" });
+        }
+
         const db = await connectToDatabase();
-        const [rows] = await db.query('SELECT * FROM accounts WHERE id = ?', [studentId]);
+        const [rows] = await db.query('SELECT * FROM acc_tb WHERE u_id = ?', [numericId]);
         
         if (rows.length === 0) {
             console.log('User not found');
             return res.status(404).json({ message: "User does not exist" });
         }
 
-        console.log('Stored Password:', rows[0].password);
+        console.log('Stored Password:', rows[0].u_password);
         
-        if (password !== rows[0].password) {
+        if (password !== rows[0].u_password) {
             console.log('Invalid credentials');
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
-        const token = jwt.sign({ id: rows[0].id, type: rows[0].type }, process.env.JWT_KEY, { expiresIn: '3h' });
+        const token = jwt.sign(
+            { 
+                id: rows[0].u_id, 
+                type: rows[0].u_role 
+            }, 
+            process.env.JWT_KEY, 
+            { expiresIn: '3h' }
+        );
 
         console.log('Login successful');
-        return res.status(200).json({ token: token, type: rows[0].type });
+        return res.status(200).json({ 
+            token: token, 
+            type: rows[0].u_role,
+            formattedId: `SCC-0-${rows[0].u_id.toString().padStart(6, '0')}`
+        });
         
     } catch (err) {
         console.error('Error:', err.message);
         return res.status(500).json({ message: "Internal server error" });
     }
 });
-
 
 const verifyToken = async (req, res, next) => {
     try {
@@ -79,12 +237,15 @@ const verifyToken = async (req, res, next) => {
 router.get('/home', verifyToken, async (req, res) => {
     try {
         const db = await connectToDatabase()
-        const [rows] = await db.query('SELECT * FROM accounts WHERE id = ?', [req.userId])
+        const [rows] = await db.query('SELECT * FROM acc_tb WHERE u_id = ?', [req.userId])
         if (rows.length === 0) {
             return res.status(404).json({ message: "User not found" })
         }
 
-        return res.status(201).json({ user: rows[0] })
+        const user = {...rows[0]};
+        user.formattedId = `SCC-0-${user.u_id.toString().padStart(6, '0')}`;
+
+        return res.status(201).json({ user })
     } catch (err) {
         return res.status(500).json({ message: "Internal server error" })
     }
@@ -93,12 +254,15 @@ router.get('/home', verifyToken, async (req, res) => {
 router.get('/parent', verifyToken, async (req, res) => {
     try {
         const db = await connectToDatabase()
-        const [rows] = await db.query('SELECT * FROM accounts WHERE id = ?', [req.userId])
+        const [rows] = await db.query('SELECT * FROM acc_tb WHERE u_id = ?', [req.userId])
         if (rows.length === 0) {
             return res.status(404).json({ message: "User not found" })
         }
 
-        return res.status(201).json({ user: rows[0] })
+        const user = {...rows[0]};
+        user.formattedId = `SCC-0-${user.u_id.toString().padStart(6, '0')}`;
+
+        return res.status(201).json({ user })
     } catch (err) {
         return res.status(500).json({ message: "Internal server error" })
     }
@@ -107,12 +271,15 @@ router.get('/parent', verifyToken, async (req, res) => {
 router.get('/teacher', verifyToken, async (req, res) => {
     try {
         const db = await connectToDatabase()
-        const [rows] = await db.query('SELECT * FROM accounts WHERE id = ?', [req.userId])
+        const [rows] = await db.query('SELECT * FROM acc_tb WHERE u_id = ?', [req.userId])
         if (rows.length === 0) {
             return res.status(404).json({ message: "User not found" })
         }
 
-        return res.status(201).json({ user: rows[0] })
+        const user = {...rows[0]};
+        user.formattedId = `SCC-0-${user.u_id.toString().padStart(6, '0')}`;
+
+        return res.status(201).json({ user })
     } catch (err) {
         return res.status(500).json({ message: "Internal server error" })
     }
@@ -121,20 +288,23 @@ router.get('/teacher', verifyToken, async (req, res) => {
 router.get('/admin', verifyToken, async (req, res) => {
     try {
         const db = await connectToDatabase()
-        const [rows] = await db.query('SELECT * FROM accounts WHERE id = ?', [req.userId])
+        const [rows] = await db.query('SELECT * FROM acc_tb WHERE u_id = ?', [req.userId])
         if (rows.length === 0) {
             return res.status(404).json({ message: "User not found" })
         }
 
-        return res.status(201).json({ user: rows[0] })
+        const user = {...rows[0]};
+        user.formattedId = `SCC-0-${user.u_id.toString().padStart(6, '0')}`;
+
+        return res.status(201).json({ user })
     } catch (err) {
         return res.status(500).json({ message: "Internal server error" })
     }
 })
 
-export default router;  
+export default router;
 
-
+// import bcrypt from 'bcrypt'
 
 // router.post('/login', async (req, res) => {
     //     const { studentId, password } = req.body;

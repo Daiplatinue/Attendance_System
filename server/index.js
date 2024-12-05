@@ -4,9 +4,16 @@ import authRouter from './routes/authRoutes.js'
 import dotenv from 'dotenv'
 import nodemailer from 'nodemailer';
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
 dotenv.config()
 
 const app = express()
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 app.use(cors({
     origin: "*",
@@ -14,6 +21,17 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use('/auth', authRouter)
+app.use('/profiles', express.static(path.join(__dirname, 'profiles')));
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        message: 'Something went wrong!',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+});
+
 
 app.get('/', (req, res) => {
     res.send("Server is running")
@@ -40,7 +58,7 @@ app.post('/api/send-email', async (req, res) => {
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to,
-            subject: 'New Message',
+            subject: 'Student Attendance Monitoring System',
             text: message,
         };
 

@@ -8,16 +8,28 @@ import {
     SidebarInset, SidebarProvider, SidebarTrigger
 } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Users, Search, Download } from 'lucide-react'
+import { Users, Search, Download, UserPlus } from 'lucide-react'
 import { EmployeeModal } from "./componentStyles/Employee-Modal"
+import { CreateModal } from "@/sections/componentStyles/CreateModal"
 
 // import img1 from '@/sections/assets/1.jpg'
 // import img2 from './assets/av5.webp'
 // import img3 from './assets/av6.jpg'
 
 const ManageAccounts: React.FC = () => {
+
+
     const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+
+    const handleCreateSuccess = () => {
+        // Refresh your employee list here
+        // You might want to add a fetchEmployees function
+    };
+
+    
 
     const employees = [
         {
@@ -115,6 +127,13 @@ const ManageAccounts: React.FC = () => {
                                             <Download className="w-4 h-4" />
                                             <span className='hidden md:inline'>Export</span>
                                         </button>
+                                        <button
+                                            onClick={() => setIsCreateModalOpen(true)}
+                                            className='flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 border border-blue-500/20 transition-all duration-200'
+                                        >
+                                            <UserPlus className="w-4 h-4" />
+                                            <span className='hidden md:inline'>Add New Account</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -180,6 +199,21 @@ const ManageAccounts: React.FC = () => {
                     />
                 </SidebarInset>
             </SidebarProvider>
+
+
+            <EmployeeModal
+                employee={selectedEmployee}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
+
+            <CreateModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={handleCreateSuccess}
+            />
+
+
         </div>
     );
 };

@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/sidebar"
 
 import { Button } from '@/components/ui/button';
-import MyAvatar from './componentStyles/MyAvatar';
 import { ChevronsDown, ChevronsLeftRightEllipsis, ChevronsUp, Download, LayoutGrid, List, Medal } from 'lucide-react'
 
 import BadgeWorking from "./componentStyles/Badge-Working";
@@ -98,7 +97,6 @@ const Parent: React.FC = () => {
 
               <div className="bg-gray-900 rounded-xl p-4 sm:p-6 border-[1px] border-slate-700">
                 <div className="flex flex-col md:flex-row gap-6 mb-8 items-center">
-                  <MyAvatar />
                   <div className="flex-grow text-center md:text-left">
                     <h2 className="text-2xl sm:text-3xl font-semibold mb-1">Lebrown Jems A.</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">

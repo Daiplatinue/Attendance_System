@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   ArrowRightLeft,
   Bell,
@@ -7,6 +8,7 @@ import {
   Tags,
   UserRound,
 } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 import {
   Avatar,
@@ -28,9 +30,18 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useNavigate } from "react-router-dom"
 import { SwitchModal } from '@/sections/componentStyles/SwitchModal'
 import { toast } from 'sonner'
+
+interface UserData {
+  u_fullname: string;
+  u_role: string;
+  u_department: string;
+  u_year: string;
+  u_email: string;
+  u_contact: string;
+  u_address: string;
+}
 
 export function NavUser({
   user,
@@ -44,6 +55,36 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
   const [isSwitchModalOpen, setIsSwitchModalOpen] = useState(false)
+  const [userData, setUserData] = useState<UserData | null>(null)
+
+  const fetchUser = async (): Promise<void> => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/introduction');
+        return;
+      }
+
+      const response = await axios.get('http://localhost:3000/auth/home', {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      
+      if (response.status === 201) {
+        setUserData(response.data.user);
+      } else {
+        navigate('/introduction');
+      }
+    } catch (err) {
+      navigate('/introduction');
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token")
@@ -60,7 +101,6 @@ export function NavUser({
         setIsSwitchModalOpen(false);
         toast.success('Account switched successfully');
         
-        // Navigate based on user type
         switch (selectedAccount.type) {
           case 'student':
             navigate('/');
@@ -85,6 +125,10 @@ export function NavUser({
     }
   };
 
+  if (!userData) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       <SidebarMenu>
@@ -96,12 +140,14 @@ export function NavUser({
                 className="data-[state=open]:bg-customBlue data-[state=open]:text-white"
               >
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">D2</AvatarFallback>
+                  <AvatarImage src={user.avatar} alt={userData.u_fullname} />
+                  <AvatarFallback className="rounded-lg">
+                    {userData.u_fullname.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-semibold">{userData.u_fullname}</span>
+                  <span className="truncate text-xs">{userData.u_email}</span>
                 </div>
                 <ChevronsUpDown className="ml-auto size-4" />
               </SidebarMenuButton>
@@ -115,12 +161,14 @@ export function NavUser({
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="rounded-lg">D2</AvatarFallback>
+                    <AvatarImage src={user.avatar} alt={userData.u_fullname} />
+                    <AvatarFallback className="rounded-lg">
+                      {userData.u_fullname.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{user.name}</span>
-                    <span className="truncate text-xs">{user.email}</span>
+                    <span className="truncate font-semibold">{userData.u_fullname}</span>
+                    <span className="truncate text-xs">{userData.u_email}</span>
                   </div>
                 </div>
               </DropdownMenuLabel>

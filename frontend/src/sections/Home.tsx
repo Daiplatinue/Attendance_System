@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/sidebar"
 
 import { Button } from '@/components/ui/button';
-import MyAvatar from './componentStyles/MyAvatar';
 import { ChevronsDown, ChevronsLeftRightEllipsis, ChevronsUp, Download, LayoutGrid, List, Medal } from 'lucide-react'
 import { Toaster } from 'sonner';
 import { AttendanceRecorder } from '@/sections/componentStyles/AttendanceDialog';
@@ -26,7 +25,20 @@ import BadgeWHHonor from "./componentStyles/Badge-WHHonor";
 import BadgeDeans from "./componentStyles/Badge-Deans";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ProfileImage } from "@/sections/componentStyles/ProfileImage";
+import { UserInfo } from "@/sections/componentStyles/UserInfo";
+
+interface UserData {
+  u_fullname: string;
+  u_role: string;
+  u_department: string;
+  u_year: string;
+  u_email: string;
+  u_contact: string;
+  u_address: string;
+  u_profile: string;
+}
 
 const attendanceData = [
   { date: 'March 08, 2024', status: 'On Time', checkIn: '08:45', checkOut: '17:10' },
@@ -41,30 +53,36 @@ const attendanceData = [
 ];
 
 export default function Home() {
+  const navigate = useNavigate();
+  const [userData, setUserData] = useState<UserData | null>(null);
 
-const navigate = useNavigate();
-
-const fetchUser = async (): Promise<void> => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await axios.get('http://localhost:3000/auth/home', {
-      headers: {
-        "Authorization": `Bearer ${token}`
+  const fetchUser = async (): Promise<void> => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:3000/auth/home', {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      
+      if (response.status === 201) {
+        setUserData(response.data.user);
+      } else {
+        navigate('/introduction');
       }
-    });
-    if (response.status !== 201) {
+    } catch (err) {
       navigate('/introduction');
+      console.error(err);
     }
-  } catch (err) {
-    navigate('/introduction');
-    console.error(err);
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  if (!userData) {
+    return <div>Loading...</div>;
   }
-};
-
-useEffect(() => {
-  fetchUser();
-}, []);
-
 
   return (
     <div>
@@ -114,36 +132,11 @@ useEffect(() => {
 
               <div className="bg-gray-900 rounded-xl p-4 sm:p-6 border-[1px] border-slate-700">
                 <div className="flex flex-col md:flex-row gap-6 mb-8 items-center">
-                  <MyAvatar />
-                  <div className="flex-grow text-center md:text-left">
-                    <h2 className="text-2xl sm:text-3xl font-semibold mb-1">Lebrown Jems A.</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
-                      <div className="mt-3 sm:mt-5">
-                        <p className="text-zinc-400 text-sm mb-1">Role</p>
-                        <p>Student</p>
-                      </div>
-                      <div className="mt-3 sm:mt-5">
-                        <p className="text-zinc-400 text-sm mb-1">Department</p>
-                        <p>BSIT</p>
-                      </div>
-                      <div className="mt-3 sm:mt-5">
-                        <p className="text-zinc-400 text-sm mb-1">Year Level</p>
-                        <p className="break-all">3rd Year</p>
-                      </div>
-                      <div className="mt-3 sm:mt-5">
-                        <p className="text-zinc-400 text-sm mb-1">Email</p>
-                        <p className="break-all">isthatlebrownjems@gmail.com</p>
-                      </div>
-                      <div className="mt-3 sm:mt-5">
-                        <p className="text-zinc-400 text-sm mb-1">Contact Number</p>
-                        <p className="break-all">(+63) 91 572 4533</p>
-                      </div>
-                      <div className="mt-3 sm:mt-5">
-                        <p className="text-zinc-400 text-sm mb-1">Address</p>
-                        <p className="break-all">Talisay City, Cebu</p>
-                      </div>
-                    </div>
-                  </div>
+                <ProfileImage 
+                  imageName={userData.u_profile} 
+                  altText={`${userData.u_fullname}'s profile`} 
+                />
+                  <UserInfo userData={userData} />
                   <div className="flex-grow flex justify-center mt-4 md:mt-0">
                     <div className="flex flex-col items-center">
                       <p className="mb-3 text-yellow-500 text-center">TOP 1 AMONG SCC STUDENTS</p>
