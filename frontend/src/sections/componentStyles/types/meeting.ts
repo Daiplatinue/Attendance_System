@@ -3,7 +3,8 @@ export interface MeetingFormData {
   date: string;
   time: string;
   description: string;
-  student_id: string;
+  teacherId: number;
+  studentId: number;
 }
 
 export interface Meeting {
@@ -18,6 +19,17 @@ export interface Meeting {
 }
 
 export interface MeetingFilter {
-  status: string;
+  status: 'All' | 'pending' | 'approved' | 'done';
   searchTerm: string;
+}
+
+export interface User {
+  u_id: number;
+  u_fullname: string;
+}
+
+export interface MeetingFormProps {
+  onSubmit: (data: MeetingFormData) => void;
+  teachers: User[];
+  students: User[];
 }

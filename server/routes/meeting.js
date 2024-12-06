@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
-// Middleware to verify JWT token
 const verifyToken = async (req, res, next) => {
     try {
         const token = req.headers['authorization'].split(' ')[1];
@@ -19,15 +18,12 @@ const verifyToken = async (req, res, next) => {
     }
 };
 
-// Get all students
 router.get('/students', verifyToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
-        console.log('Fetching students from database...');
         const [students] = await db.query(
             'SELECT u_id, u_fullname FROM acc_tb WHERE u_role = "student"'
         );
-        console.log('Students fetched:', students);
         res.status(200).json(students);
     } catch (error) {
         console.error('Error fetching students:', error);
@@ -35,16 +31,28 @@ router.get('/students', verifyToken, async (req, res) => {
     }
 });
 
-// Create a new meeting request
+router.get('/teachers', verifyToken, async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const [teachers] = await db.query(
+            'SELECT u_id, u_fullname FROM acc_tb WHERE u_role = "teacher"'
+        );
+        res.status(200).json(teachers);
+    } catch (error) {
+        console.error('Error fetching teachers:', error);
+        res.status(500).json({ message: "Error fetching teachers" });
+    }
+});
+
 router.post('/create', verifyToken, async (req, res) => {
     try {
-        const { mt_title, mt_description, mt_date, mt_time, student_id } = req.body;
+        const { mt_title, mt_description, mt_date, mt_time, student_id, teacher_id } = req.body;
         const db = await connectToDatabase();
 
         const [result] = await db.query(
-            `INSERT INTO meeting_tb (u_id, mt_status, mt_title, mt_description, mt_date, mt_time) 
-             VALUES (?, 'pending', ?, ?, ?, ?)`,
-            [student_id, mt_title, mt_description, mt_date, mt_time]
+            `INSERT INTO meeting_tb (teacher_id, student_id, mt_status, mt_title, mt_description, mt_date, mt_time) 
+             VALUES (?, ?, 'pending', ?, ?, ?, ?)`,
+            [teacher_id, student_id, mt_title, mt_description, mt_date, mt_time]
         );
 
         res.status(201).json({
@@ -57,17 +65,20 @@ router.post('/create', verifyToken, async (req, res) => {
     }
 });
 
-// Get all meetings for a user
 router.get('/list', verifyToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
         
         const [meetings] = await db.query(
-            `SELECT m.*, t.u_fullname as student_name 
+            `SELECT 
+                m.*,
+                t.u_fullname as teacher_name,
+                s.u_fullname as student_name
              FROM meeting_tb m 
-             JOIN acc_tb t ON m.u_id = t.u_id 
-             WHERE m.u_id = ?`,
-            [req.userId]
+             JOIN acc_tb t ON m.teacher_id = t.u_id 
+             JOIN acc_tb s ON m.student_id = s.u_id 
+             WHERE m.teacher_id = ? OR m.student_id = ?`,
+            [req.userId, req.userId]
         );
 
         res.status(200).json(meetings);
@@ -77,7 +88,6 @@ router.get('/list', verifyToken, async (req, res) => {
     }
 });
 
-// Update meeting status
 router.put('/status/:id', verifyToken, async (req, res) => {
     try {
         const { status } = req.body;
@@ -96,16 +106,19 @@ router.put('/status/:id', verifyToken, async (req, res) => {
     }
 });
 
-// Get meeting details
 router.get('/:id', verifyToken, async (req, res) => {
     try {
         const meetingId = req.params.id;
         const db = await connectToDatabase();
 
         const [meetings] = await db.query(
-            `SELECT m.*, t.u_fullname as student_name 
+            `SELECT 
+                m.*,
+                t.u_fullname as teacher_name,
+                s.u_fullname as student_name
              FROM meeting_tb m 
-             JOIN acc_tb t ON m.u_id = t.u_id 
+             JOIN acc_tb t ON m.teacher_id = t.u_id 
+             JOIN acc_tb s ON m.student_id = s.u_id 
              WHERE m.mt_id = ?`,
             [meetingId]
         );
