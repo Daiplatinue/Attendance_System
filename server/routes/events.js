@@ -8,7 +8,7 @@ router.get('/fetchEvents', async (req, res) => {
   try {
     const db = await connectToDatabase();
     const [rows] = await db.query('SELECT * FROM events_tb ORDER BY e_startDate DESC');
-    
+
     // Transform the database rows to match the frontend Event type
     const events = rows.map(row => ({
       id: row.e_id,
@@ -22,7 +22,7 @@ router.get('/fetchEvents', async (req, res) => {
       status: row.e_status,
       departments: row.e_department.split(',').map(dept => dept.trim()),
       organizer: row.e_organizer,
-      description: row.e_desc,
+      description: row.e_description, // Fixed: Changed from e_desc to e_description
       avatarUrl: row.e_avatar || `https://api.dicebear.com/7.x/shapes/svg?seed=${row.e_type.toLowerCase()}`
     }));
 
@@ -34,7 +34,7 @@ router.get('/fetchEvents', async (req, res) => {
 });
 
 // Create a new event
-router.post('/createEvent', async (req, res) => { 
+router.post('/createEvent', async (req, res) => {
   try {
     const {
       name,
@@ -57,10 +57,10 @@ router.post('/createEvent', async (req, res) => {
     }
 
     const db = await connectToDatabase();
-    
+
     // Format departments array to string
     const departmentsString = Array.isArray(departments) ? departments.join(', ') : departments;
-    
+
     // Generate avatar URL if not provided
     const finalAvatarUrl = avatarUrl || `https://api.dicebear.com/7.x/shapes/svg?seed=${type.toLowerCase()}`;
 

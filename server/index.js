@@ -11,6 +11,9 @@ import { dirname } from 'path';
 import leaderboardRoutes from './routes/leaderboard.js';
 import eventRouter from './routes/events.js'
 import announcementRouter from './routes/announcement.js';
+import taskRouter from './routes/notes.js';
+import teacherRouter from './routes/teacher.js';
+import meetingRoutes from './routes/meeting.js';
 
 dotenv.config()
 
@@ -26,6 +29,9 @@ app.use(cors({
 
 app.use(express.json())
 app.use('/auth', authRouter)
+app.use('/api/tasks', taskRouter) // Mount notes routers
+app.use('/api/teacher', teacherRouter); // Mount teacher routes
+app.use('/api/meetings', meetingRoutes);
 app.use('/announcements', announcementRouter); // Mount announcement routes 
 app.use('/api', eventRouter); // Mount event routes under /api
 app.use('/profiles', express.static(path.join(__dirname, 'profiles')));

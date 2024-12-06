@@ -1,28 +1,51 @@
-import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { PlusCircle } from 'lucide-react'
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PlusCircle } from 'lucide-react';
+import axios from 'axios';
 
 interface AddSectionDialogProps {
-  onAdd: (name: string, schedule: string) => void
-  buttonText?: string
+  onAdd: (name: string, schedule: string) => void;
+  buttonText?: string;
 }
 
 export function AddSectionDialog({ onAdd, buttonText = "Add Section" }: AddSectionDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [sectionName, setSectionName] = useState('')
-  const [schedule, setSchedule] = useState('')
+  const [open, setOpen] = useState(false);
+  const [sectionName, setSectionName] = useState('');
+  const [schedule, setSchedule] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
     if (sectionName.trim() && schedule.trim()) {
-      onAdd(sectionName.trim(), schedule.trim())
-      setSectionName('')
-      setSchedule('')
-      setOpen(false)
+      try {
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+
+        const response = await axios.post('http://localhost:3000/api/teacher/section', {
+          u_id: userId,
+          t_subject: '', // This will be set from the parent component
+          t_sectionName: sectionName.trim(),
+          t_schedule: schedule.trim()
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        onAdd(sectionName.trim(), schedule.trim());
+        setSectionName('');
+        setSchedule('');
+        setOpen(false);
+      } catch (error: any) {
+        setError(error.response?.data?.message || 'Failed to add section. Please try again.');
+        console.error('Error adding section:', error);
+      }
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -47,10 +70,10 @@ export function AddSectionDialog({ onAdd, buttonText = "Add Section" }: AddSecti
             onChange={(e) => setSchedule(e.target.value)}
             placeholder="Enter schedule (e.g., MWF 10:00-11:30)"
           />
+          {error && <p className="text-red-500 text-sm">{error}</p>}
           <Button type="submit">Add Section</Button>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

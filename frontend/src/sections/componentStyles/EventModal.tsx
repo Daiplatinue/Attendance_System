@@ -29,7 +29,7 @@ export function EventModal({ event, isOpen, onClose }: EventModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-modalColor text-white border border-white/10 max-w-2xl">
+      <DialogContent className="bg-modalColor text-white border border-white/10 max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="space-y-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16 ring-2 ring-white/10">
@@ -104,7 +104,9 @@ export function EventModal({ event, isOpen, onClose }: EventModalProps) {
 
           <div className="border-t border-white/10 pt-4">
             <h3 className="font-semibold mb-2">Description</h3>
-            <p className="text-gray-400 whitespace-pre-wrap">{event.description}</p>
+            <p className="text-gray-400 whitespace-pre-wrap">
+              {event.description || 'No description available'}
+            </p>
           </div>
 
           <div className="border-t border-white/10 pt-4">

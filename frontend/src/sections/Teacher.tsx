@@ -27,7 +27,7 @@ import { ViewAttendanceDialog } from './componentStyles/ViewAttendanceDialog';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-export default function Home() {
+export default function Teacher() {
 
     const navigate = useNavigate();
 
@@ -59,13 +59,46 @@ export default function Home() {
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [statusFilter, setStatusFilter] = useState<'all' | 'enrolled' | 'dropped'>('all');
 
-    const handleAddSubject = (name: string) => {
-        const newSubject: Subject = {
-            id: subjects.length + 1,
-            name,
-            sections: []
-        };
-        setSubjects([...subjects, newSubject]);
+    const fetchSubjects = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+            const response = await axios.get(`/api/teacher/subjects/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const subjectsData = response.data.map((item: any) => ({
+                id: item.t_id,
+                name: item.t_subject,
+                sections: []
+            }));
+
+            setSubjects(subjectsData);
+        } catch (error) {
+            console.error('Error fetching subjects:', error);
+        }
+    };
+
+    const handleAddSubject = async (name: string) => {
+        try {
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+            const response = await axios.post('http://localhost:3000/api/teacher/subject', {
+                u_id: userId,
+                t_subject: name
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const newSubject: Subject = {
+                id: response.data.t_id,
+                name,
+                sections: []
+            };
+            setSubjects([...subjects, newSubject]);
+        } catch (error) {
+            console.error('Error adding subject:', error);
+        }
     };
 
     const handleImportStudents = (importedStudents: Student[]) => {
@@ -92,20 +125,38 @@ export default function Home() {
         }
     };
 
-    const handleAddSection = (name: string, schedule: string) => {
+    const handleAddSection = async (name: string, schedule: string) => {
         if (selectedSubject) {
-            const newSection: Section = {
-                id: String.fromCharCode(65 + selectedSubject.sections.length),
-                name,
-                schedule,
-                students: []
-            };
-            const updatedSubject = {
-                ...selectedSubject,
-                sections: [...selectedSubject.sections, newSection]
-            };
-            setSubjects(subjects.map(s => s.id === selectedSubject.id ? updatedSubject : s));
-            setSelectedSubject(updatedSubject);
+            try {
+                const token = localStorage.getItem('token');
+                const userId = localStorage.getItem('userId');
+
+                const response = await axios.post('http://localhost:3000/api/teacher/section', {
+                    u_id: userId,
+                    t_subject: selectedSubject.name,
+                    t_sectionName: name,
+                    t_schedule: schedule
+                }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                const newSection: Section = {
+                    id: response.data.t_id.toString(),
+                    name,
+                    schedule,
+                    students: []
+                };
+
+                const updatedSubject = {
+                    ...selectedSubject,
+                    sections: [...selectedSubject.sections, newSection]
+                };
+
+                setSubjects(subjects.map(s => s.id === selectedSubject.id ? updatedSubject : s));
+                setSelectedSubject(updatedSubject);
+            } catch (error) {
+                console.error('Error adding section:', error);
+            }
         }
     };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Pin, Calendar, Heart, FileText, ImageIcon } from 'lucide-react'
@@ -24,36 +24,88 @@ interface AnnouncementProps {
   isPinned: boolean;
   initialReactions: Reaction;
   attachments: Attachment[];
+  avatar?: string;
 }
 
 const AnnouncementCard: React.FC<AnnouncementProps> = ({    
+  id,
   title,
   content,
   author,
   date,
   isPinned,
   initialReactions,
-  attachments
+  attachments,
+  avatar = 'default-avatar.png'
 }) => {
   const [reactions, setReactions] = useState(initialReactions);
   const [hasReacted, setHasReacted] = useState(false);
 
-  const handleReaction = () => {
-    if (hasReacted) {
-      setReactions(prev => ({ count: prev.count - 1 }));
-    } else {
-      setReactions(prev => ({ count: prev.count + 1 }));
+  const handleReaction = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/announcements/${id}/react`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ value: !hasReacted }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update reaction');
+
+      const data = await response.json();
+      setReactions({ count: data.reactions });
+      setHasReacted(!hasReacted);
+    } catch (error) {
+      console.error('Error updating reaction:', error);
     }
-    setHasReacted(!hasReacted);
+  };
+
+  const handleAttachmentClick = async (url: string, fileName: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchReactionState = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/announcements/${id}/reactions`);
+        if (response.ok) {
+          const data = await response.json();
+          setReactions({ count: data.reactions });
+          setHasReacted(data.hasReacted);
+        }
+      } catch (error) {
+        console.error('Error fetching reactions:', error);
+      }
+    };
+
+    fetchReactionState();
+  }, [id]);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
   };
 
   return (
     <div className='bg-modalColor rounded-xl shadow-2xl p-6 border border-gray-800'>
-      {/* Header */}
       <div className='flex items-start justify-between mb-4'>
         <div className='flex items-center gap-4'>
           <Avatar className='h-10 w-10 ring-2 ring-gray-700'>
-            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${author}`} alt={author} />
+            <AvatarImage src={avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${author}`} alt={author} />
             <AvatarFallback>{author[0]}</AvatarFallback>
           </Avatar>
           <div>
@@ -66,25 +118,21 @@ const AnnouncementCard: React.FC<AnnouncementProps> = ({
               <span>•</span>
               <span className='flex items-center gap-1'>
                 <Calendar className="w-4 h-4" />
-                {date}
+                {formatDate(date)}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <p className='text-gray-300 mb-4'>{content}</p>
+      <p className='text-gray-300 mb-4 whitespace-pre-wrap'>{content}</p>
 
-      {/* Attachments */}
-      {attachments.length > 0 && (
-        <div className='grid grid-cols-2 gap-4 mb-4'>
+      {attachments && attachments.length > 0 && (
+        <div className='flex flex-wrap gap-4 mb-4'>
           {attachments.map((attachment, index) => (
-            <a
+            <button
               key={index}
-              href={attachment.url}
-              target="_blank"
-              rel="noopener noreferrer"
+              onClick={() => handleAttachmentClick(attachment.url, attachment.name)}
               className='flex items-center gap-2 p-3 rounded-lg bg-modalColor hover:bg-gray-600 transition-colors border border-gray-700'
             >
               {attachment.type === 'image' ? (
@@ -92,13 +140,12 @@ const AnnouncementCard: React.FC<AnnouncementProps> = ({
               ) : (
                 <FileText className="w-5 h-5 text-blue-400" />
               )}
-              <span className='text-sm text-gray-300 truncate'>{attachment.name}</span>
-            </a>
+              <span className='text-sm text-gray-300 truncate max-w-[150px]'>{attachment.name}</span>
+            </button>
           ))}
         </div>
       )}
 
-      {/* Stats */}
       <div className='flex items-center justify-between text-sm text-gray-400 mb-[-10px]'>
         <div className='flex items-center gap-2'>
           <Heart className="w-4 h-4 text-red-400" />

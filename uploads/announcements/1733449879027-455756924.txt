@@ -1,0 +1,22 @@
+inspector.js:7 
+        
+        
+       POST http://localhost:3000/announcements 500 (Internal Server Error)
+window.fetch @ inspector.js:7
+handleSubmit @ CreateAnnouncement.tsx:39
+callCallback2 @ chunk-NUMECXU6.js?v=60505b39:3674
+invokeGuardedCallbackDev @ chunk-NUMECXU6.js?v=60505b39:3699
+invokeGuardedCallback @ chunk-NUMECXU6.js?v=60505b39:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-NUMECXU6.js?v=60505b39:3736
+executeDispatch @ chunk-NUMECXU6.js?v=60505b39:7014
+processDispatchQueueItemsInOrder @ chunk-NUMECXU6.js?v=60505b39:7034
+processDispatchQueue @ chunk-NUMECXU6.js?v=60505b39:7043
+dispatchEventsForPlugins @ chunk-NUMECXU6.js?v=60505b39:7051
+(anonymous) @ chunk-NUMECXU6.js?v=60505b39:7174
+batchedUpdates$1 @ chunk-NUMECXU6.js?v=60505b39:18913
+batchedUpdates @ chunk-NUMECXU6.js?v=60505b39:3579
+dispatchEventForPluginEventSystem @ chunk-NUMECXU6.js?v=60505b39:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-NUMECXU6.js?v=60505b39:5478
+dispatchEvent @ chunk-NUMECXU6.js?v=60505b39:5472
+dispatchDiscreteEvent @ chunk-NUMECXU6.js?v=60505b39:5449Understand this errorAI
+CreateAnnouncement.tsx:56 Failed to create announcement
