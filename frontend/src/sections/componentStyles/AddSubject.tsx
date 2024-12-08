@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusCircle } from 'lucide-react';
-import axios from 'axios';
 
 interface AddSubjectDialogProps {
   onAdd: (name: string) => void;
@@ -15,31 +14,14 @@ export function AddSubjectDialog({ onAdd, buttonText = "Add Subject" }: AddSubje
   const [subjectName, setSubjectName] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (subjectName.trim()) {
-      try {
-        const token = localStorage.getItem('token');
-        const userId = localStorage.getItem('userId');
-
-        const response = await axios.post('http://localhost:3000/api/teacher/subject', {
-          u_id: userId,
-          t_subject: subjectName.trim()
-        }, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        onAdd(subjectName.trim());
-        setSubjectName('');
-        setOpen(false);
-      } catch (error: any) {
-        setError(error.response?.data?.message || 'Failed to add subject. Please try again.');
-        console.error('Error adding subject:', error);
-      }
+      onAdd(subjectName.trim());
+      setSubjectName('');
+      setOpen(false);
     }
   };
 
@@ -51,7 +33,7 @@ export function AddSubjectDialog({ onAdd, buttonText = "Add Subject" }: AddSubje
           {buttonText}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className='bg-gray-900 text-white border border-gray-800'>
         <DialogHeader>
           <DialogTitle>Add New Subject</DialogTitle>
         </DialogHeader>
@@ -60,9 +42,10 @@ export function AddSubjectDialog({ onAdd, buttonText = "Add Subject" }: AddSubje
             value={subjectName}
             onChange={(e) => setSubjectName(e.target.value)}
             placeholder="Enter subject name"
+            className="bg-gray-800 border-gray-800 text-white"
           />
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          <Button type="submit">Add Subject</Button>
+          <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700">Add Subject</Button>
         </form>
       </DialogContent>
     </Dialog>

@@ -47,7 +47,7 @@ export function EventCard({ event, onViewDetails }: EventCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className='bg-modalColor rounded-xl shadow-2xl p-6 border border-white/10 backdrop-blur-lg h-full flex flex-col'
+      className='bg-modalColor rounded-xl shadow-2xl p-6 border border-gray-800 backdrop-blur-lg h-full flex flex-col'
     >
       <div className='flex justify-between items-start mb-4'>
         <div className='flex-1 min-w-0 mr-3'>

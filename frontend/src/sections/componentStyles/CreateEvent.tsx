@@ -99,7 +99,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
-                <SelectContent className="bg-modalColor border-white/10">
+                <SelectContent className="bg-modalColor border-white/10 text-white">
                   <SelectItem value="Academic">Academic</SelectItem>
                   <SelectItem value="Sports">Sports</SelectItem>
                   <SelectItem value="Cultural">Cultural</SelectItem>

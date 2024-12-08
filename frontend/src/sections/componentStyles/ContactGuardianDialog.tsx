@@ -67,7 +67,7 @@ export function ContactGuardianDialog({ isOpen, onClose, studentName }: ContactG
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-900 border-white/10 text-white max-w-md mx-auto">
+      <DialogContent className="bg-gray-900 border border-gray-800 text-white max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
             <Phone className="w-6 h-6 text-blue-400" />
@@ -90,7 +90,7 @@ export function ContactGuardianDialog({ isOpen, onClose, studentName }: ContactG
               type="button"
               variant={contactMethod === 'email' ? 'default' : 'secondary'}
               onClick={() => setContactMethod('email')}
-              className="flex-1"
+              className="flex-1 "
             >
               <Mail className="w-5 h-5 mr-2" />
               Send Email
@@ -187,11 +187,11 @@ export function ContactGuardianDialog({ isOpen, onClose, studentName }: ContactG
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 bg-blue-600 text-white hover:bg-blue-700" 
               >
                 {isLoading ? (
                   <motion.div
-                    className="w-5 h-5 border-t-2 border-white rounded-full"
+                    className="w-5 h-5 border-t-2 border-white rounded-full "
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   />

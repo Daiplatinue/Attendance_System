@@ -80,7 +80,7 @@ export default function AllEvents() {
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 bg-modalColor text-white border-b border-white/10">
+          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-modalColor text-white border-b border-white/10 backdrop-blur-lg bg-opacity-80">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
@@ -93,7 +93,7 @@ export default function AllEvents() {
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Events</BreadcrumbPage>
+                    <BreadcrumbPage className='text-white'>Events</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
@@ -101,7 +101,7 @@ export default function AllEvents() {
           </header>
 
           <div className='max-w-7xl mx-auto p-4 md:p-6 lg:p-8'>
-            <div className='bg-modalColor rounded-xl shadow-2xl p-6 border border-white/10 backdrop-blur-lg mb-8'>
+            <div className='bg-modalColor rounded-xl shadow-2xl p-6 border border-gray-800 backdrop-blur-lg mb-8'>
               <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
                 <h2 className='text-xl font-semibold flex items-center gap-2 text-white'>
                   <Calendar className="w-5 h-5 text-blue-400" />
@@ -114,16 +114,16 @@ export default function AllEvents() {
                       placeholder="Search events"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className='w-full md:w-auto pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/5 text-white placeholder-gray-400 border border-white/10'
+                      className='w-full md:w-auto pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/5 text-white placeholder-gray-400 h-[2.7rem]'
                     />
                     <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
                   </div>
                   <div className='flex gap-2'>
-                    <button className='flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-lg hover:bg-white/10 border border-white/10 transition-colors'>
+                    <button className='flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-lg hover:bg-white/10 border border-gray-800 transition-colors'>
                       <Download className="w-4 h-4" />
                       <span className='hidden md:inline'>Export</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => setIsCreateModalOpen(true)}
                       className='flex items-center gap-2 px-4 py-2.5 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 border border-blue-500/20 transition-all duration-200'
                     >

@@ -46,12 +46,12 @@ export default function ViewLeaderboard() {
             try {
                 const response = await axios.get('http://localhost:3000/api/leaderboard');
                 const sortedData = response.data.sort((a: Student, b: Student) => b.a_total - a.a_total);
-                
+
                 // Calculate trends based on position changes
                 const dataWithTrends = sortedData.map((student: Student, currentIndex: number) => {
                     const previousRank = previousRankings[student.u_id] || currentIndex;
                     const rankDifference = previousRank - currentIndex;
-                    
+
                     return {
                         ...student,
                         previousRank: previousRank,
@@ -67,7 +67,7 @@ export default function ViewLeaderboard() {
                     newRankings[student.u_id] = index;
                 });
                 setPreviousRankings(newRankings);
-                
+
                 setLeaderboardData(dataWithTrends);
             } catch (err) {
                 setError("Failed to fetch leaderboard data");
@@ -156,7 +156,7 @@ export default function ViewLeaderboard() {
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset>
-                    <header className="flex h-16 shrink-0 items-center gap-2 bg-black/20 text-white border-b border-white/10 backdrop-blur-sm">
+                    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-modalColor text-white border-b border-white/10 backdrop-blur-lg bg-opacity-80">
                         <div className="flex items-center gap-2 px-4">
                             <SidebarTrigger className="-ml-1" />
                             <Separator orientation="vertical" className="mr-2 h-4" />
@@ -169,7 +169,7 @@ export default function ViewLeaderboard() {
                                     </BreadcrumbItem>
                                     <BreadcrumbSeparator className="hidden md:block" />
                                     <BreadcrumbItem>
-                                        <BreadcrumbPage>Leaderboard</BreadcrumbPage>
+                                        <BreadcrumbPage className="text-white">Leaderboards</BreadcrumbPage>
                                     </BreadcrumbItem>
                                 </BreadcrumbList>
                             </Breadcrumb>
@@ -180,7 +180,7 @@ export default function ViewLeaderboard() {
                         <motion.div
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className='bg-black/40 rounded-xl shadow-2xl p-6 border border-white/10 backdrop-blur-md'
+                            className='bg-modalColor rounded-xl shadow-2xl p-6 border border-gray-800 backdrop-blur-md'
                         >
                             <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4'>
                                 <motion.div
@@ -200,7 +200,7 @@ export default function ViewLeaderboard() {
                                     <input
                                         type="text"
                                         placeholder="Search students"
-                                        className='w-full md:w-72 pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/5 text-white placeholder-gray-400 border border-white/10 transition-all duration-300 hover:bg-white/10'
+                                        className='w-full md:w-72 pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/5 text-white placeholder-gray-400 border border-gray-800 transition-all duration-300 hover:bg-white/10'
                                     />
                                     <Search className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" />
                                 </div>
@@ -217,12 +217,12 @@ export default function ViewLeaderboard() {
                                         variants={podiumVariants}
                                         className="md:mt-8"
                                     >
-                                        <div className="flex flex-col items-center p-6 bg-gradient-to-b from-gray-300/20 to-white/5 rounded-2xl border border-white/20 transform hover:scale-105 transition-all duration-500 hover:shadow-xl">
+                                        <div className="flex flex-col items-center p-6 bg-gradient-to-b from-gray-300/20 to-white/5 rounded-2xl border border-gray-800 transform hover:scale-105 transition-all duration-500 hover:shadow-xl">
                                             <div className="mb-4 animate-bounce">
                                                 {getTrophyIcon(1)}
                                             </div>
                                             <Avatar className="h-20 w-20 mb-4 ring-4 ring-gray-300 shadow-2xl">
-                                                <AvatarImage src={leaderboardData[1].u_profile || `https://api.dicebear.com/7.x/avataaars/svg?seed=${leaderboardData[1].u_fullname}`} />
+                                                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${leaderboardData[1].u_fullname}`} />
                                                 <AvatarFallback>{leaderboardData[1].u_fullname.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <p className="text-white font-bold text-lg text-center mb-1">{leaderboardData[1].u_fullname}</p>
@@ -247,12 +247,12 @@ export default function ViewLeaderboard() {
                                         variants={podiumVariants}
                                         className="md:order-1"
                                     >
-                                        <div className="flex flex-col items-center p-8 bg-gradient-to-b from-yellow-400/20 via-yellow-600/10 to-yellow-900/5 rounded-2xl border border-yellow-400/30 transform hover:scale-105 transition-all duration-500 hover:shadow-2xl shadow-yellow-400/20">
+                                        <div className="flex flex-col items-center p-8 bg-gradient-to-b from-yellow-400/20 via-yellow-600/10 to-yellow-900/5 rounded-2xl border border-yellow-500 transform hover:scale-105 transition-all duration-500 hover:shadow-2xl shadow-yellow-400/20">
                                             <div className="mb-4 animate-bounce">
                                                 {getTrophyIcon(0)}
                                             </div>
                                             <Avatar className="h-24 w-24 mb-4 ring-4 ring-yellow-400 shadow-2xl">
-                                                <AvatarImage src={leaderboardData[0].u_profile || `https://api.dicebear.com/7.x/avataaars/svg?seed=${leaderboardData[0].u_fullname}`} />
+                                                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${leaderboardData[0].u_fullname}`} />
                                                 <AvatarFallback>{leaderboardData[0].u_fullname.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <p className="text-yellow-400 font-bold text-xl text-center mb-1">{leaderboardData[0].u_fullname}</p>
@@ -282,7 +282,7 @@ export default function ViewLeaderboard() {
                                                 {getTrophyIcon(2)}
                                             </div>
                                             <Avatar className="h-20 w-20 mb-4 ring-4 ring-amber-600 shadow-2xl">
-                                                <AvatarImage src={leaderboardData[2].u_profile || `https://api.dicebear.com/7.x/avataaars/svg?seed=${leaderboardData[2].u_fullname}`} />
+                                                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${leaderboardData[2].u_fullname}`} />
                                                 <AvatarFallback>{leaderboardData[2].u_fullname.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <p className="text-white font-bold text-lg text-center mb-1">{leaderboardData[2].u_fullname}</p>
@@ -330,7 +330,7 @@ export default function ViewLeaderboard() {
                                                 <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center">
                                                         <Avatar className="h-10 w-10 ring-2 ring-white/10">
-                                                            <AvatarImage src={student.u_profile || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.u_fullname}`} />
+                                                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${student.u_fullname}`} />
                                                             <AvatarFallback>{student.u_fullname.charAt(0)}</AvatarFallback>
                                                         </Avatar>
                                                         <div className="ml-4">

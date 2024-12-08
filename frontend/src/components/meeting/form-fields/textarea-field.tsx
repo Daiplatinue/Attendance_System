@@ -11,7 +11,7 @@ interface TextareaFieldProps {
 export const TextareaField = ({ label, name, value, onChange, required }: TextareaFieldProps) => {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={name} className="block text-sm font-medium text-white">
         {label}
       </label>
       <Textarea
@@ -19,7 +19,7 @@ export const TextareaField = ({ label, name, value, onChange, required }: Textar
         name={name}
         value={value}
         onChange={onChange}
-        className="mt-1"
+        className="mt-1 bg-gray-800 border-gray-700 text-white"
         required={required}
       />
     </div>

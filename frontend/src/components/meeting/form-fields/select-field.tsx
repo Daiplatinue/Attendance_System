@@ -13,14 +13,14 @@ interface SelectFieldProps {
 export const SelectField = ({ label, name, value, onChange, options, placeholder }: SelectFieldProps) => {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={name} className="block text-sm font-medium text-white">
         {label}
       </label>
-      <UISelect value={value} onValueChange={(value) => onChange(value)}>
-        <SelectTrigger className="mt-1 w-full">
+      <UISelect value={value} onValueChange={(value) => onChange(value)} >
+        <SelectTrigger className="mt-1 w-full bg-gray-800 border-gray-700 text-white">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-modalColor border-gray-700 text-white">
           {options.map((option) => (
             <SelectItem key={option.u_id} value={option.u_id.toString()}>
               {option.u_fullname}

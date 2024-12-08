@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AppSidebar } from "@/components/app-sidebar-teacher"
 import {
     Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator"
 import {
     SidebarInset, SidebarProvider, SidebarTrigger
 } from "@/components/ui/sidebar"
-import { Book, Users, Search, GraduationCap, Clock, School, Filter } from 'lucide-react'
+import { Book, Users, Search, GraduationCap, Clock,  Filter } from 'lucide-react'
 import { Student, Section, Subject } from '@/sections/componentStyles/types/teacher';
 import { AddSubjectDialog } from '@/sections/componentStyles/AddSubject';
 import { AddSectionDialog } from '@/sections/componentStyles/AddSection';
@@ -24,34 +24,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ViewAttendanceDialog } from './componentStyles/ViewAttendanceDialog';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 export default function Teacher() {
-
-    const navigate = useNavigate();
-
-    const fetchUser = async (): Promise<void> => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:3000/auth/home', {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            });
-            if (response.status !== 201) {
-                navigate('/introduction');
-            }
-        } catch (err) {
-            navigate('/introduction');
-            console.error(err);
-        }
-    };
-
-    useEffect(() => {
-        fetchUser();
-    }, []);
-
     const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
     const [selectedSection, setSelectedSection] = useState<Section | null>(null);
     const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -59,46 +33,13 @@ export default function Teacher() {
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [statusFilter, setStatusFilter] = useState<'all' | 'enrolled' | 'dropped'>('all');
 
-    const fetchSubjects = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const userId = localStorage.getItem('userId');
-            const response = await axios.get(`/api/teacher/subjects/${userId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            const subjectsData = response.data.map((item: any) => ({
-                id: item.t_id,
-                name: item.t_subject,
-                sections: []
-            }));
-
-            setSubjects(subjectsData);
-        } catch (error) {
-            console.error('Error fetching subjects:', error);
-        }
-    };
-
-    const handleAddSubject = async (name: string) => {
-        try {
-            const token = localStorage.getItem('token');
-            const userId = localStorage.getItem('userId');
-            const response = await axios.post('http://localhost:3000/api/teacher/subject', {
-                u_id: userId,
-                t_subject: name
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            const newSubject: Subject = {
-                id: response.data.t_id,
-                name,
-                sections: []
-            };
-            setSubjects([...subjects, newSubject]);
-        } catch (error) {
-            console.error('Error adding subject:', error);
-        }
+    const handleAddSubject = (name: string) => {
+        const newSubject: Subject = {
+            id: Date.now().toString(),
+            name,
+            sections: []
+        };
+        setSubjects([...subjects, newSubject]);
     };
 
     const handleImportStudents = (importedStudents: Student[]) => {
@@ -125,38 +66,22 @@ export default function Teacher() {
         }
     };
 
-    const handleAddSection = async (name: string, schedule: string) => {
+    const handleAddSection = (name: string, schedule: string) => {
         if (selectedSubject) {
-            try {
-                const token = localStorage.getItem('token');
-                const userId = localStorage.getItem('userId');
+            const newSection: Section = {
+                id: Date.now().toString(),
+                name,
+                schedule,
+                students: []
+            };
 
-                const response = await axios.post('http://localhost:3000/api/teacher/section', {
-                    u_id: userId,
-                    t_subject: selectedSubject.name,
-                    t_sectionName: name,
-                    t_schedule: schedule
-                }, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+            const updatedSubject = {
+                ...selectedSubject,
+                sections: [...selectedSubject.sections, newSection]
+            };
 
-                const newSection: Section = {
-                    id: response.data.t_id.toString(),
-                    name,
-                    schedule,
-                    students: []
-                };
-
-                const updatedSubject = {
-                    ...selectedSubject,
-                    sections: [...selectedSubject.sections, newSection]
-                };
-
-                setSubjects(subjects.map(s => s.id === selectedSubject.id ? updatedSubject : s));
-                setSelectedSubject(updatedSubject);
-            } catch (error) {
-                console.error('Error adding section:', error);
-            }
+            setSubjects(subjects.map(s => s.id === selectedSubject.id ? updatedSubject : s));
+            setSelectedSubject(updatedSubject);
         }
     };
 
@@ -194,9 +119,8 @@ export default function Teacher() {
                             setSelectedSubject(null);
                             setSelectedSection(null);
                         }}
-                        className="text-gray-400 hover:text-white cursor-pointer flex items-center gap-2"
+                        className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-modalColor text-white border-b border-white/10 backdrop-blur-lg bg-opacity-80"
                     >
-                        <School className="w-4 h-4" />
                         Dashboard
                     </BreadcrumbPage>
                 </BreadcrumbItem>
@@ -208,7 +132,6 @@ export default function Teacher() {
                                 onClick={() => setSelectedSection(null)}
                                 className={`${!selectedSection ? 'text-white' : 'text-gray-400 hover:text-white cursor-pointer'} flex items-center gap-2`}
                             >
-                                <Book className="w-4 h-4" />
                                 {selectedSubject.name}
                             </BreadcrumbPage>
                         </BreadcrumbItem>
@@ -219,7 +142,6 @@ export default function Teacher() {
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
                             <BreadcrumbPage className="text-white flex items-center gap-2">
-                                <Users className="w-4 h-4" />
                                 {selectedSection.name}
                             </BreadcrumbPage>
                         </BreadcrumbItem>
@@ -302,7 +224,6 @@ export default function Teacher() {
                                                 <div className={`text-sm font-medium ${student.dropped ? 'text-red-500' : 'text-white'}`}>
                                                     {student.name}
                                                 </div>
-
                                             </div>
                                         </td>
                                         <td className='px-4 md:px-6 py-4 whitespace-nowrap'>
@@ -410,7 +331,7 @@ export default function Teacher() {
                                         <Book className="w-6 h-6 text-blue-400" />
                                         {selectedSubject.name}
                                     </h2>
-                                    {!selectedSection && <AddSectionDialog onAdd={handleAddSection} />}
+                                    {/* {!selectedSection && <AddSectionDialog onAdd={handleAddSection} />} */}
                                 </div>
 
                                 {selectedSubject.sections.length === 0 ? (

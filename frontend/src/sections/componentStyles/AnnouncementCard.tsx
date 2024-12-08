@@ -105,7 +105,7 @@ const AnnouncementCard: React.FC<AnnouncementProps> = ({
       <div className='flex items-start justify-between mb-4'>
         <div className='flex items-center gap-4'>
           <Avatar className='h-10 w-10 ring-2 ring-gray-700'>
-            <AvatarImage src={avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${author}`} alt={author} />
+            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${author}`} alt={author} />
             <AvatarFallback>{author[0]}</AvatarFallback>
           </Avatar>
           <div>

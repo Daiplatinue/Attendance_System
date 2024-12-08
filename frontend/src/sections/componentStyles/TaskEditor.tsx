@@ -44,7 +44,7 @@ export function TaskEditor({ onSubmit, initialValues, submitLabel = 'Add Task' }
     }
 
     return (
-        <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+        <div className="bg-modalColor rounded-lg p-4 border border-gray-800">
             <input
                 type="text"
                 placeholder="Task title"
@@ -59,7 +59,7 @@ export function TaskEditor({ onSubmit, initialValues, submitLabel = 'Add Task' }
                     onChange={(content) => setTask({ ...task, description: content })}
                 />
             </div>
-            <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-white/10">
+            <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-800">
                 <div className="flex items-center gap-2">
                     <input
                         type="checkbox"
@@ -75,7 +75,7 @@ export function TaskEditor({ onSubmit, initialValues, submitLabel = 'Add Task' }
                         type="datetime-local"
                         value={task.deadline}
                         onChange={(e) => setTask({ ...task, deadline: e.target.value })}
-                        className="bg-white/5 text-gray-300 rounded-lg px-3 py-1 border border-white/10"
+                        className="bg-white/5 text-gray-300 rounded-lg px-3 py-1 border border-gray-800"
                     />
                 )}
                 <div className="flex-1" />

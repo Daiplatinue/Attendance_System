@@ -242,7 +242,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="bg-customBlue rounded-xl p-4 sm:p-6 border-[1px] border-gray-700">
+              <div className="bg-modalColor rounded-xl p-4 sm:p-6 border-[1px] border-gray-800">
                 <div className="flex flex-col md:flex-row gap-6 mb-8 items-center">
                   <img 
                     src={av1}
@@ -392,7 +392,7 @@ export default function Home() {
 
 // =======================================================================================================
 
-// FETCH
+// GET
 
 // function doGet(e) {
 //   var sheet = SpreadsheetApp.getActiveSheet();

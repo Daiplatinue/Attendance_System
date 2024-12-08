@@ -1,94 +1,109 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppSidebar } from "@/components/app-sidebar-parent";
 import {
-    Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage,
+    Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
+    BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import {
     SidebarInset, SidebarProvider, SidebarTrigger
 } from "@/components/ui/sidebar";
 import type { Meeting, MeetingFilter } from '@/sections/componentStyles/types/meeting';
-import { MeetingModal } from '@/sections/MeetingModal-Parent';
+import { MeetingModal } from '@/sections/MeetingModal';
 import { MeetingList } from '@/components/meeting/meeting-list';
 import { MeetingHeader } from '@/components/meeting/meeting-header';
 import { MeetingFilterComponent } from '@/components/meeting/meeting-filter';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
 
-const MeetingPage: React.FC = () => {
+const MeetingParent: React.FC = () => {
     const [showRequestForm, setShowRequestForm] = useState(false);
     const [filter, setFilter] = useState<MeetingFilter>({
         status: 'All',
         searchTerm: ''
     });
-    const [meetings, setMeetings] = useState<Meeting[]>([
-        {
-            id: "MTG-001",
-            teacher: "Ms. Sarah Johnson",
-            subject: "Academic Progress Discussion",
-            date: "2024-03-15",
-            time: "14:00",
-            status: "Pending",
-            studentName: "John Smith",
-            description: "Discuss first quarter academic performance and areas for improvement"
-        },
-        {
-            id: "MTG-002",
-            teacher: "Mr. David Wilson",
-            subject: "Behavioral Consultation",
-            date: "2024-03-16",
-            time: "15:30",
-            status: "Approved",
-            studentName: "Emma Davis",
-            description: "Address recent classroom behavior concerns"
-        },
-        {
-            id: "MTG-003",
-            teacher: "Dr. Maria Garcia",
-            subject: "Special Education Planning",
-            date: "2024-03-17",
-            time: "13:00",
-            status: "Rejected",
-            studentName: "Michael Brown",
-            description: "Review and update IEP goals and accommodations"
+    const [meetings, setMeetings] = useState<Meeting[]>([]);
+
+    useEffect(() => {
+        fetchMeetings();
+    }, []);
+
+    const fetchMeetings = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get('/api/meetings/list', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const formattedMeetings = response.data.map((meeting: any) => ({
+                id: meeting.mt_id,
+                teacher: meeting.requester_name,
+                subject: meeting.mt_title,
+                date: meeting.mt_date,
+                time: meeting.mt_time,
+                status: meeting.mt_status,
+                description: meeting.mt_description,
+                studentName: meeting.student_name
+            }));
+            setMeetings(formattedMeetings);
+        } catch (error) {
+            console.error('Error fetching meetings:', error);
         }
-    ]);
+    };
 
-    const filteredMeetings = useMemo(() => {
-        return meetings.filter(meeting => {
-            const matchesStatus = filter.status === 'All' || meeting.status === filter.status;
-            const searchTerm = filter.searchTerm.toLowerCase();
-            const matchesSearch = !filter.searchTerm || 
-                meeting.subject.toLowerCase().includes(searchTerm) ||
-                meeting.teacher.toLowerCase().includes(searchTerm) ||
-                meeting.studentName.toLowerCase().includes(searchTerm) ||
-                meeting.description.toLowerCase().includes(searchTerm);
-            
-            return matchesStatus && matchesSearch;
-        });
-    }, [meetings, filter]);
-
-    const handleStatusChange = (id: string, newStatus: Meeting['status']) => {
-        setMeetings(meetings.map(meeting => 
-            meeting.id === id ? { ...meeting, status: newStatus } : meeting
-        ));
+    const handleStatusChange = async (id: string, newStatus: Meeting['status']) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(`/api/meetings/status/${id}`,
+                { status: newStatus },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+            setMeetings(meetings.map(meeting =>
+                meeting.id === id ? { ...meeting, status: newStatus } : meeting
+            ));
+        } catch (error) {
+            console.error('Error updating meeting status:', error);
+        }
     };
 
     const handleAddMeeting = (newMeeting: Meeting) => {
         setMeetings([newMeeting, ...meetings]);
     };
 
+    const filteredMeetings = meetings.filter(meeting => {
+        const matchesStatus = filter.status === 'All' || meeting.status === filter.status;
+        const searchTerm = filter.searchTerm.toLowerCase();
+        const matchesSearch = !filter.searchTerm ||
+            meeting.subject.toLowerCase().includes(searchTerm) ||
+            meeting.teacher.toLowerCase().includes(searchTerm) ||
+            meeting.studentName.toLowerCase().includes(searchTerm) ||
+            meeting.description.toLowerCase().includes(searchTerm);
+
+        return matchesStatus && matchesSearch;
+    });
+
     return (
         <div className="min-h-screen bg-gray-900">
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset>
-                    <header className="flex h-16 shrink-0 items-center gap-2 bg-gray-800 text-white border-b border-gray-700">
+                    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-modalColor text-white border-b border-white/10 backdrop-blur-lg bg-opacity-80">
                         <div className="flex items-center gap-2 px-4">
                             <SidebarTrigger className="-ml-1" />
                             <Separator orientation="vertical" className="mr-2 h-4" />
                             <Breadcrumb>
                                 <BreadcrumbList>
                                     <BreadcrumbItem className="hidden md:block">
+                                        <BreadcrumbLink>
+                                            <Link to={'/'}>Dashboard</Link>
+                                        </BreadcrumbLink>
                                     </BreadcrumbItem>
+                                    <BreadcrumbSeparator className="hidden md:block" />
                                     <BreadcrumbItem>
                                         <BreadcrumbPage className="text-white">Meetings</BreadcrumbPage>
                                     </BreadcrumbItem>
@@ -116,4 +131,4 @@ const MeetingPage: React.FC = () => {
     );
 };
 
-export default MeetingPage;
+export default MeetingParent;

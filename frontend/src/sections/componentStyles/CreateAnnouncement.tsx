@@ -106,9 +106,9 @@ const CreateAnnouncement: React.FC<CreateAnnouncementProps> = ({ onClose, onSubm
 
   return (
     <div className='fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4'>
-      <div className='bg-modalColor rounded-2xl shadow-2xl border border-white/10 backdrop-blur-lg w-full max-w-2xl overflow-hidden'>
+      <div className='bg-modalColor rounded-2xl shadow-2xl border border-gray-800 backdrop-blur-lg w-full max-w-2xl overflow-hidden'>
         {/* Header */}
-        <div className='bg-gray-800/50 px-6 py-4 border-b border-gray-700 flex items-center justify-between'>
+        <div className='bg-gray-800/50 px-6 py-4 border-b border-gray-800 flex items-center justify-between'>
           <h2 className='text-xl font-semibold text-white flex items-center gap-2'>
             Create Announcement
           </h2>
@@ -138,11 +138,11 @@ const CreateAnnouncement: React.FC<CreateAnnouncementProps> = ({ onClose, onSubm
                   placeholder="Announcement title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className='w-full bg-gray-800/30 rounded-lg px-4 py-3 text-white placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'
+                  className='w-full bg-gray-800/30 rounded-lg px-4 py-3 text-white placeholder-gray-400 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200'
                 />
                 
                 <Select value={department} onValueChange={setDepartment}>
-                  <SelectTrigger className="w-full bg-gray-800/30 border-gray-700 focus:ring-2 focus:ring-blue-500">
+                  <SelectTrigger className="w-full bg-gray-800/30 border-gray-800 focus:ring-2 focus:ring-blue-500">
                     <SelectValue placeholder="Select Department" />
                   </SelectTrigger>
                   <SelectContent className='bg-modalColor text-gray-200 border border-gray-800 '>
@@ -161,7 +161,7 @@ const CreateAnnouncement: React.FC<CreateAnnouncementProps> = ({ onClose, onSubm
               placeholder="What would you like to announce?"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className='w-full h-40 bg-gray-800/30 rounded-lg px-4 py-3 text-white placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none'
+              className='w-full h-40 bg-gray-800/30 rounded-lg px-4 py-3 text-white placeholder-gray-400 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none'
             />
 
             {/* Attachments Display */}
@@ -170,7 +170,7 @@ const CreateAnnouncement: React.FC<CreateAnnouncementProps> = ({ onClose, onSubm
                 {attachments.map((file, index) => (
                   <div 
                     key={index} 
-                    className='flex items-center gap-2 p-3 rounded-lg bg-gray-800/30 border border-gray-700 group hover:border-gray-600 transition-all duration-200'
+                    className='flex items-center gap-2 p-3 rounded-lg bg-gray-800/30 border border-gray-800 group hover:border-gray-600 transition-all duration-200'
                   >
                     {file.type.startsWith('image/') ? (
                       <ImageIcon className="w-5 h-5 text-blue-400 shrink-0" />
@@ -192,7 +192,7 @@ const CreateAnnouncement: React.FC<CreateAnnouncementProps> = ({ onClose, onSubm
           </div>
 
           {/* Footer Actions */}
-          <div className='flex items-center justify-between mt-6 pt-6 border-t border-gray-700'>
+          <div className='flex items-center justify-between mt-6 pt-6 border-t border-gray-800'>
             <div className='flex items-center gap-3'>
               <Button 
                 type="button" 

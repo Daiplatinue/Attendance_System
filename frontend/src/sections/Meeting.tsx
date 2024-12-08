@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { AppSidebar } from "@/components/app-sidebar-teacher";
 import {
-    Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage,
+    Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
+    BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -13,6 +14,7 @@ import { MeetingList } from '@/components/meeting/meeting-list';
 import { MeetingHeader } from '@/components/meeting/meeting-header';
 import { MeetingFilterComponent } from '@/components/meeting/meeting-filter';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const MeetingPage: React.FC = () => {
     const [showRequestForm, setShowRequestForm] = useState(false);
@@ -53,7 +55,7 @@ const MeetingPage: React.FC = () => {
     const handleStatusChange = async (id: string, newStatus: Meeting['status']) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`/api/meetings/status/${id}`, 
+            await axios.put(`/api/meetings/status/${id}`,
                 { status: newStatus },
                 {
                     headers: {
@@ -61,7 +63,7 @@ const MeetingPage: React.FC = () => {
                     }
                 }
             );
-            setMeetings(meetings.map(meeting => 
+            setMeetings(meetings.map(meeting =>
                 meeting.id === id ? { ...meeting, status: newStatus } : meeting
             ));
         } catch (error) {
@@ -76,12 +78,12 @@ const MeetingPage: React.FC = () => {
     const filteredMeetings = meetings.filter(meeting => {
         const matchesStatus = filter.status === 'All' || meeting.status === filter.status;
         const searchTerm = filter.searchTerm.toLowerCase();
-        const matchesSearch = !filter.searchTerm || 
+        const matchesSearch = !filter.searchTerm ||
             meeting.subject.toLowerCase().includes(searchTerm) ||
             meeting.teacher.toLowerCase().includes(searchTerm) ||
             meeting.studentName.toLowerCase().includes(searchTerm) ||
             meeting.description.toLowerCase().includes(searchTerm);
-        
+
         return matchesStatus && matchesSearch;
     });
 
@@ -90,14 +92,18 @@ const MeetingPage: React.FC = () => {
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset>
-                    <header className="flex h-16 shrink-0 items-center gap-2 bg-gray-800 text-white border-b border-gray-700">
+                    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-modalColor text-white border-b border-white/10 backdrop-blur-lg bg-opacity-80">
                         <div className="flex items-center gap-2 px-4">
                             <SidebarTrigger className="-ml-1" />
                             <Separator orientation="vertical" className="mr-2 h-4" />
                             <Breadcrumb>
                                 <BreadcrumbList>
                                     <BreadcrumbItem className="hidden md:block">
+                                        <BreadcrumbLink>
+                                            <Link to={'/'}>Dashboard</Link>
+                                        </BreadcrumbLink>
                                     </BreadcrumbItem>
+                                    <BreadcrumbSeparator className="hidden md:block" />
                                     <BreadcrumbItem>
                                         <BreadcrumbPage className="text-white">Meetings</BreadcrumbPage>
                                     </BreadcrumbItem>

@@ -12,10 +12,6 @@ import { Users, Search, Download, UserPlus } from 'lucide-react'
 import { EmployeeModal } from "./componentStyles/Employee-Modal"
 import { CreateModal } from "@/sections/componentStyles/CreateModal"
 
-// import img1 from '@/sections/assets/1.jpg'
-// import img2 from './assets/av5.webp'
-// import img3 from './assets/av6.jpg'
-
 const ManageAccounts: React.FC = () => {
 
 

@@ -95,7 +95,8 @@ export default function TodoList() {
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-modalColor text-white border-b border-white/10 backdrop-blur-lg bg-opacity-80">
+          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-modalColor text-white border-b
+           border-gray-800 backdrop-blur-lg bg-opacity-80">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
@@ -118,7 +119,7 @@ export default function TodoList() {
           <div className="max-w-5xl mx-auto p-4 md:p-6 lg:p-8">
             <div className="space-y-6">
               {/* Header with Search and Filters */}
-              <div className="bg-modalColor rounded-xl p-4 border border-white/10 shadow-lg">
+              <div className="bg-modalColor rounded-xl p-4 border border-gray-800 shadow-lg">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                   <h2 className="text-2xl font-bold flex items-center gap-2 text-white">
                     <ListTodo className="w-6 h-6 text-blue-400" />
@@ -131,7 +132,7 @@ export default function TodoList() {
                         placeholder="Search tasks..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full md:w-64 pl-10 pr-4 py-2 rounded-lg bg-white/5 text-white placeholder-gray-400 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full md:w-64 pl-10 pr-4 py-2 rounded-lg bg-white/5 text-white placeholder-gray-400 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       />
                       <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
                     </div>
@@ -140,7 +141,7 @@ export default function TodoList() {
                       <select
                         value={filter}
                         onChange={(e) => setFilter(e.target.value as 'all' | 'ongoing' | 'done')}
-                        className="bg-white/5 text-gray-300 rounded-lg px-3 py-2 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="bg-white/5 text-gray-300 rounded-lg px-3 py-2 border border-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       >
                         <option value="all">All Tasks</option>
                         <option value="ongoing">Ongoing</option>
@@ -152,14 +153,14 @@ export default function TodoList() {
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                  <div className="bg-white/5 rounded-lg p-3 border border-gray-800">
                     <div className="flex items-center gap-2 text-blue-400">
                       <ListTodo className="w-4 h-4" />
                       <span className="text-sm">Total Tasks</span>
                     </div>
                     <p className="text-xl font-bold text-white mt-1">{tasks.length}</p>
                   </div>
-                  <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                  <div className="bg-white/5 rounded-lg p-3 border border-gray-800">
                     <div className="flex items-center gap-2 text-green-400">
                       <Clock className="w-4 h-4" />
                       <span className="text-sm">Ongoing</span>
@@ -168,7 +169,7 @@ export default function TodoList() {
                       {tasks.filter(t => t.status === 'ongoing').length}
                     </p>
                   </div>
-                  <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                  <div className="bg-white/5 rounded-lg p-3 border border-gray-800">
                     <div className="flex items-center gap-2 text-purple-400">
                       <Calendar className="w-4 h-4" />
                       <span className="text-sm">With Deadline</span>
@@ -177,7 +178,7 @@ export default function TodoList() {
                       {tasks.filter(t => t.deadline).length}
                     </p>
                   </div>
-                  <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                  <div className="bg-white/5 rounded-lg p-3 border border-gray-800">
                     <div className="flex items-center gap-2 text-yellow-400">
                       <Clock className="w-4 h-4" />
                       <span className="text-sm">Completed</span>
@@ -202,7 +203,7 @@ export default function TodoList() {
                   />
                 ))}
                 {filteredTasks.length === 0 && (
-                  <div className="text-center py-12 bg-modalColor rounded-xl border border-white/10">
+                  <div className="text-center py-12 bg-modalColor rounded-xl border border-gray-800">
                     <ListTodo className="w-12 h-12 text-gray-500 mx-auto mb-4" />
                     <p className="text-xl font-semibold text-gray-400 mb-2">
                       {searchQuery ? 'No tasks found matching your search' : 'No tasks yet'}

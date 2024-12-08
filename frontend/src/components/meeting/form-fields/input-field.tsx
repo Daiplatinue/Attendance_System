@@ -12,7 +12,7 @@ interface InputFieldProps {
 export const InputField = ({ label, name, type, value, onChange, required }: InputFieldProps) => {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={name} className="block text-sm font-medium text-white">
         {label}
       </label>
       <Input
@@ -21,7 +21,7 @@ export const InputField = ({ label, name, type, value, onChange, required }: Inp
         name={name}
         value={value}
         onChange={onChange}
-        className="mt-1"
+        className="mt-1 bg-gray-800 border-gray-700 text-white"
         required={required}
       />
     </div>

@@ -90,7 +90,7 @@ export const MeetingForm = ({ onSubmit, teachers, students }: MeetingFormProps) 
         required
       />
 
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-full bg-blue-600 text-white hover:bg-blue-700">
         Submit
       </Button>
     </form>

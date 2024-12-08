@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppSidebar } from "@/components/app-sidebar-teacher"
 import {
-  Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage,
+  Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -10,63 +11,82 @@ import {
 import { Bell, Search, Plus } from 'lucide-react'
 import AnnouncementCard from '@/sections/componentStyles/AnnouncementCard'
 import CreateAnnouncement from '@/sections/componentStyles/CreateAnnouncement'
+import { Link } from 'react-router-dom';
+
+interface Announcement {
+  am_id: number;
+  am_title: string;
+  am_desc: string;
+  am_department: string;
+  am_date: string;
+  am_react: number;
+  am_avatar: string;
+  attachments: Array<{
+    att_id: number;
+    att_fileName: string;
+    att_filePath: string;
+  }>;
+}
 
 const Announcements: React.FC = () => {
-  const [showCreateAnnouncement, setShowCreateAnnouncement] = useState(false);
-  const [announcements, setAnnouncements] = useState([
-    {
-      id: 1,
-      title: "Intramurals 2024 Schedule Update",
-      content: "Please be informed that the Intramurals 2024 schedule has been updated. All sports events will now start at 8:00 AM.",
-      author: "Admin Office",
-      date: "Jan 15, 2024",
-      isPinned: true,
-      initialReactions: { count: 80 },
-      attachments: [
-        { type: 'file' as const, url: 'https://docs.google.com/spreadsheets/d/1z2liYRjQTtqwBG4y84Di4I2CItUwKKNIg1CpQqMv_J8/edit?gid=0#gid=0', name: 'schedule.xls' },
-        { type: 'image' as const, url: 'https://www.google.com/maps/place/St.+Cecilias+College+-+Cebu,+Inc./@10.2445161,123.7934703,18.5z/data=!4m15!1m8!3m7!1s0x33a977e4598c638d:0xd2016057b1f9cd28!2sMinglanilla,+Cebu!3b1!8m2!3d10.2454075!4d123.7959226!16zL20vMDZoNGhs!3m5!1s0x33a977e250bd286d:0x377f6ed9ed966fe7!8m2!3d10.2446906!4d123.7944106!16s%2Fg%2F1tfksvw4?entry=ttu&g_ep=EgoyMDI0MTExOS4yIKXMDSoASAFQAw%3D%3D', name: 'Google-map.gmap' },
-      ],
-    },
-    {
-      id: 2,
-      title: "Online Class Advisory",
-      content: "Due to the incoming typhoon, all classes will be conducted online from January 20-21, 2024.",
-      author: "Academic Affairs",
-      date: "Jan 14, 2024",
-      isPinned: true,
-      initialReactions: { count: 82 },
-      attachments: [],
-    },
-  ]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const handleCreateAnnouncement = (newAnnouncement: any) => {
-    setAnnouncements([
-      {
-        id: announcements.length + 1,
-        ...newAnnouncement,
-        author: "Admin Office",
-        isPinned: false,
-        initialReactions: { count: 0 },
-        attachments: [],
-      },
-      ...announcements,
-    ]);
-    setShowCreateAnnouncement(false);
+  const fetchAnnouncements = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/announcements');
+      if (!response.ok) {
+        throw new Error('Failed to fetch announcements');
+      }
+      const data = await response.json();
+
+      // Sort announcements by date in descending order (newest first)
+      const sortedAnnouncements = data.sort((a: Announcement, b: Announcement) => b.am_id - a.am_id);
+
+      setAnnouncements(data);
+      setAnnouncements(sortedAnnouncements);
+      setLoading(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchAnnouncements();
+  }, []);
+
+  const handleAnnouncementSubmit = async (newAnnouncement: any) => {
+    await fetchAnnouncements();
+    setIsCreateModalOpen(false);
+  };
+
+  const filteredAnnouncements = announcements.filter(announcement =>
+    announcement.am_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    announcement.am_desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    announcement.am_department.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-gray-900">
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 bg-gray-800 text-white border-b border-gray-700">
+          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-modalColor text-white border-b border-white/10 backdrop-blur-lg bg-opacity-80">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink>
+                      <Link to={'/'}>Dashboard</Link>
+                    </BreadcrumbLink>
                   </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
                     <BreadcrumbPage className="text-white">Announcements</BreadcrumbPage>
                   </BreadcrumbItem>
@@ -77,7 +97,7 @@ const Announcements: React.FC = () => {
 
           <div className='max-w-3xl mx-auto p-4 md:p-6 lg:p-8'>
             {/* Header Section */}
-            <div className='bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700 mb-8'>
+            <div className='bg-modalColor rounded-xl shadow-2xl p-6 border border-gray-800 mb-8'>
               <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
                 <h2 className='text-xl font-semibold flex items-center gap-2 text-white'>
                   <Bell className="w-5 h-5 text-blue-400" />
@@ -88,12 +108,14 @@ const Announcements: React.FC = () => {
                     <input
                       type="text"
                       placeholder="Search announcements"
-                      className='w-full md:w-auto pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-700 text-white placeholder-gray-400 border border-gray-600'
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className='w-full md:w-auto pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/5 text-white placeholder-gray-400'
                     />
                     <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
                   </div>
                   <button
-                    onClick={() => setShowCreateAnnouncement(true)}
+                    onClick={() => setIsCreateModalOpen(true)}
                     className='flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 border border-blue-500/20 transition-all duration-200'
                   >
                     <Plus className="w-4 h-4" />
@@ -104,17 +126,33 @@ const Announcements: React.FC = () => {
             </div>
 
             {/* Announcements List */}
-            <div className='space-y-4'>
-              {announcements.map((announcement) => (
-                <AnnouncementCard key={announcement.id} {...announcement} />
+            <div className="space-y-6">
+              {filteredAnnouncements.map((announcement) => (
+                <AnnouncementCard
+                  key={announcement.am_id}
+                  id={announcement.am_id}
+                  title={announcement.am_title}
+                  content={announcement.am_desc}
+                  author={announcement.am_department}
+                  date={announcement.am_date}
+                  isPinned={false}
+                  initialReactions={{ count: announcement.am_react }}
+                  avatar={announcement.am_avatar}
+                  attachments={announcement.attachments.map(att => ({
+                    type: att.att_fileName.match(/\.(jpg|jpeg|png|gif)$/i) ? 'image' : 'file',
+                    url: `/uploads/announcements/${att.att_filePath}`,
+                    name: att.att_fileName
+                  }))}
+                />
               ))}
             </div>
+
           </div>
 
-          {showCreateAnnouncement && (
+          {isCreateModalOpen && (
             <CreateAnnouncement
-              onClose={() => setShowCreateAnnouncement(false)}
-              onSubmit={handleCreateAnnouncement}
+              onClose={() => setIsCreateModalOpen(false)}
+              onSubmit={handleAnnouncementSubmit}
             />
           )}
         </SidebarInset>
@@ -124,4 +162,3 @@ const Announcements: React.FC = () => {
 };
 
 export default Announcements;
-

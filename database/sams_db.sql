@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 06, 2024 at 08:03 AM
+-- Generation Time: Dec 08, 2024 at 08:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -159,7 +159,9 @@ CREATE TABLE `events_tb` (
 INSERT INTO `events_tb` (`e_id`, `e_title`, `e_status`, `e_avatar`, `e_type`, `e_location`, `e_startDate`, `e_endDate`, `e_startTime`, `e_endTime`, `e_department`, `e_organizer`, `e_description`) VALUES
 (1, 'Event Name', 'Upcoming', 'Avatar', 'Sports', 'Location', '2024-12-12', '2024-12-12', '00:12', '00:12', 'Department', 'Organizer', 'Decro[tion'),
 (2, 'FOSTER OCTAGON', 'Upcoming', 'https://api.dicebear.com/7.x/shapes/svg?seed=acade', 'Academic', 'BED COMLAB 4TH FLOOR', '2024-12-12', '2024-12-12', '10:30', '12:00', 'ALL', 'Mike BUstamante', 'Help me ill help you madapakers'),
-(3, 'asd2121', 'Done', 'https://api.dicebear.com/7.x/shapes/svg?seed=cultu', 'Cultural', '1221', '2024-12-12', '2024-12-12', '12:12', '12:12', 'fsdaafdasfd', 'sdfasfad', 'asdasdasddsfdfsdafsadf');
+(3, 'asd2121', 'Done', 'https://api.dicebear.com/7.x/shapes/svg?seed=cultu', 'Cultural', '1221', '2024-12-12', '2024-12-12', '12:12', '12:12', 'fsdaafdasfd', 'sdfasfad', 'asdasdasddsfdfsdafsadf'),
+(4, 'asd', 'Upcoming', 'https://api.dicebear.com/7.x/shapes/svg?seed=sport', 'Sports', 'asd', '2024-12-12', '2024-12-12', '00:12', '00:12', '12', '12', '12'),
+(5, '12', 'Upcoming', 'https://api.dicebear.com/7.x/shapes/svg?seed=cultu', 'Cultural', '12', '2024-12-12', '2024-12-12', '00:12', '00:12', 'asd', 'asd', 'Annual sports competition between departments feat');
 
 -- --------------------------------------------------------
 
@@ -169,7 +171,8 @@ INSERT INTO `events_tb` (`e_id`, `e_title`, `e_status`, `e_avatar`, `e_type`, `e
 
 CREATE TABLE `meeting_tb` (
   `mt_id` int(11) NOT NULL,
-  `u_id` int(11) NOT NULL,
+  `teacher_id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
   `mt_status` enum('Pending','Approved','Done') NOT NULL,
   `mt_title` varchar(50) NOT NULL,
   `mt_description` varchar(50) NOT NULL,
@@ -177,6 +180,25 @@ CREATE TABLE `meeting_tb` (
   `mt_time` varchar(50) NOT NULL,
   `mt_avatarURL` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `meeting_tb`
+--
+
+INSERT INTO `meeting_tb` (`mt_id`, `teacher_id`, `student_id`, `mt_status`, `mt_title`, `mt_description`, `mt_date`, `mt_time`, `mt_avatarURL`) VALUES
+(1, 39, 0, 'Pending', 'Dina mo skwela', 'yawa nalng jd ani', '2024-12-12', '10:30', ''),
+(2, 39, 0, 'Pending', 'sub', 'desc', '2024-12-12', '10:30', ''),
+(3, 36, 0, 'Pending', 'asd', 'a', '2024-12-12', '00:12', ''),
+(4, 39, 0, 'Pending', 'asdasd', 'de', '2024-12-12', '22:10', ''),
+(5, 0, 0, 'Pending', 'asd', 'desc', '2024-12-12', '00:12', ''),
+(6, 36, 0, 'Pending', 'asd', '1', '2024-12-12', '11:11', ''),
+(7, 39, 0, 'Pending', 'dfgdfg', 'a', '2024-12-12', '00:12', ''),
+(8, 40, 37, 'Pending', 'sub', 'desc', '2024-12-12', '12:12', ''),
+(9, 40, 37, 'Pending', 'asd', '122', '2024-12-12', '00:12', ''),
+(10, 40, 42, 'Pending', '124', '1212', '2024-12-12', '00:12', ''),
+(11, 40, 35, 'Done', 'subject', 'GIATAY', '2024-12-12', '02:02', ''),
+(12, 40, 41, 'Approved', '123', 'asd', '2024-12-12', '00:12', ''),
+(13, 40, 37, 'Done', 'asd', 'asdasd', '2024-12-12', '00:12', '');
 
 -- --------------------------------------------------------
 
@@ -297,13 +319,13 @@ ALTER TABLE `attendance_tb`
 -- AUTO_INCREMENT for table `events_tb`
 --
 ALTER TABLE `events_tb`
-  MODIFY `e_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `e_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `meeting_tb`
 --
 ALTER TABLE `meeting_tb`
-  MODIFY `mt_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `mt_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `notes_tb`

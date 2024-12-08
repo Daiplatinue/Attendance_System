@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusCircle } from 'lucide-react';
-import axios from 'axios';
 
 interface AddSectionDialogProps {
   onAdd: (name: string, schedule: string) => void;
@@ -16,34 +15,15 @@ export function AddSectionDialog({ onAdd, buttonText = "Add Section" }: AddSecti
   const [schedule, setSchedule] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (sectionName.trim() && schedule.trim()) {
-      try {
-        const token = localStorage.getItem('token');
-        const userId = localStorage.getItem('userId');
-
-        const response = await axios.post('http://localhost:3000/api/teacher/section', {
-          u_id: userId,
-          t_subject: '', // This will be set from the parent component
-          t_sectionName: sectionName.trim(),
-          t_schedule: schedule.trim()
-        }, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        onAdd(sectionName.trim(), schedule.trim());
-        setSectionName('');
-        setSchedule('');
-        setOpen(false);
-      } catch (error: any) {
-        setError(error.response?.data?.message || 'Failed to add section. Please try again.');
-        console.error('Error adding section:', error);
-      }
+      onAdd(sectionName.trim(), schedule.trim());
+      setSectionName('');
+      setSchedule('');
+      setOpen(false);
     }
   };
 
@@ -55,23 +35,25 @@ export function AddSectionDialog({ onAdd, buttonText = "Add Section" }: AddSecti
           {buttonText}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className='bg-gray-900 text-white border border-gray-800'>
         <DialogHeader>
-          <DialogTitle>Add New Section</DialogTitle>
+          <DialogTitle >Add New Section</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             value={sectionName}
             onChange={(e) => setSectionName(e.target.value)}
             placeholder="Enter section name"
+            className="bg-gray-800 border-gray-800 text-white"
           />
           <Input
             value={schedule}
             onChange={(e) => setSchedule(e.target.value)}
             placeholder="Enter schedule (e.g., MWF 10:00-11:30)"
+            className="bg-gray-800 border-gray-800 text-white"
           />
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          <Button type="submit">Add Section</Button>
+          <Button type="submit" className='bg-emerald-500 hover:bg-emerald-600 text-white'>Add Section</Button>
         </form>
       </DialogContent>
     </Dialog>

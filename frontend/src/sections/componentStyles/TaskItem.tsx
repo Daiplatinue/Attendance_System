@@ -47,7 +47,7 @@ export function TaskItem({ task, onAction }: TaskItemProps) {
   }
 
   return (
-    <div className={`bg-modalColor rounded-xl border border-white/10 overflow-hidden transition-all duration-200 ${task.status === 'done' ? 'opacity-75' : ''}`}>
+    <div className={`bg-modalColor rounded-xl border border-gray-800 overflow-hidden transition-all duration-200 ${task.status === 'done' ? 'opacity-75' : ''}`}>
       <div className="p-4">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div className="flex-1">
@@ -87,7 +87,7 @@ export function TaskItem({ task, onAction }: TaskItemProps) {
               <MoreVertical className="w-5 h-5 text-gray-400" />
             </button>
             {showMenu && (
-              <div className="absolute right-0 mt-1 w-48 rounded-lg bg-gray-800 border border-white/10 shadow-lg z-10">
+              <div className="absolute right-0 mt-1 w-48 rounded-lg bg-gray-800 border border-gray-800 shadow-lg z-10">
                 <button
                   onClick={handleEdit}
                   className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-white/5 flex items-center gap-2"

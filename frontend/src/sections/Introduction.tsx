@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReasonsPagination from '@/sections/componentStyles/ReasonsPagination';
-import bgVideo from '@/sections/assets/street.mp4';
+import bgVideo from '@/sections/assets/particles.mp4';
 
 function Introduction() {
     const [showReasons, setShowReasons] = useState(false);

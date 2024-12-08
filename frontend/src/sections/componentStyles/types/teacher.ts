@@ -12,7 +12,7 @@ export interface Section {
 }
 
 export interface Subject {
-  id: number;
+  id: string;
   name: string;
   sections: Section[];
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppSidebar } from "@/components/app-sidebar-admin"
 import {
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
@@ -13,72 +13,60 @@ import { EventCard } from '@/sections/componentStyles/EventCard'
 import { EventModal } from '@/sections/componentStyles/EventModal'
 import { CreateEventModal } from '@/sections/componentStyles/CreateEvent'
 import { Event } from '@/sections/componentStyles/types/events'
+import axios from 'axios';
+import { toast } from 'sonner';
 
 export default function AllEvents() {
-  const [events, setEvents] = useState<Event[]>([
-    {
-      id: "EVT-001",
-      name: "Intramurals 2024",
-      type: "Sports",
-      location: "Main Campus Ground",
-      startDate: "2024-01-15",
-      endDate: "2024-01-31",
-      startTime: "08:00",
-      endTime: "17:00",
-      status: "Ongoing",
-      departments: ["Physical Education", "All Departments"],
-      organizer: "Student Affairs Office",
-      description: "Annual sports competition between departments featuring various athletic events including basketball, volleyball, football, and track and field. Join us for two weeks of exciting competitions and show your department spirit!",
-      avatarUrl: "https://api.dicebear.com/7.x/shapes/svg?seed=sports"
-    },
-    {
-      id: "EVT-002",
-      name: "SCC Fiesta 2024",
-      type: "Cultural",
-      location: "University Auditorium",
-      startDate: "2024-02-15",
-      endDate: "2024-02-17",
-      startTime: "09:00",
-      endTime: "22:00",
-      status: "Upcoming",
-      departments: ["All Departments"],
-      organizer: "Cultural Committee",
-      description: "Annual university festival celebration showcasing cultural performances, food stalls, and various entertainment activities. Don't miss the grand cultural night and fireworks display!",
-      avatarUrl: "https://api.dicebear.com/7.x/shapes/svg?seed=cultural"
-    },
-    {
-      id: "EVT-003",
-      name: "Tech Summit 2024",
-      type: "Academic",
-      location: "IT Building",
-      startDate: "2024-03-10",
-      endDate: "2024-03-11",
-      startTime: "10:00",
-      endTime: "16:00",
-      status: "Upcoming",
-      departments: ["IT", "Computer Science", "Engineering"],
-      organizer: "IT Department",
-      description: "Technology conference and workshops featuring industry experts, hands-on coding sessions, and the latest trends in technology. Perfect for students interested in tech innovation.",
-      avatarUrl: "https://api.dicebear.com/7.x/shapes/svg?seed=tech"
-    }
-  ]);
-
+  const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/fetchEvents');
+      const formattedEvents = response.data.map((event: any) => ({
+        id: event.id.toString(),
+        name: event.name,
+        type: event.type,
+        location: event.location,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        status: event.status,
+        departments: Array.isArray(event.departments) ? event.departments : event.departments.split(',').map((d: string) => d.trim()),
+        organizer: event.organizer,
+        description: event.description,
+        avatarUrl: event.avatarUrl
+      }));
+      setEvents(formattedEvents);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      toast.error('Failed to load events');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleViewDetails = (event: Event) => {
     setSelectedEvent(event);
     setIsModalOpen(true);
   };
 
-  const handleCreateEvent = (newEvent: Omit<Event, 'id'>) => {
-    const event: Event = {
-      ...newEvent,
-      id: `EVT-${String(events.length + 1).padStart(3, '0')}`,
-    };
-    setEvents([...events, event]);
+  const handleCreateEvent = async (newEvent: Omit<Event, 'id'>) => {
+    try {
+      await fetchEvents(); // Refresh the events list after creating a new event
+    } catch (error) {
+      console.error('Error refreshing events:', error);
+      toast.error('Failed to refresh events list');
+    }
   };
 
   const filteredEvents = events.filter(event =>
@@ -92,7 +80,7 @@ export default function AllEvents() {
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 bg-modalColor text-white border-b border-white/10">
+          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-modalColor text-white border-b border-white/10 backdrop-blur-lg bg-opacity-80">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
@@ -105,7 +93,7 @@ export default function AllEvents() {
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Events</BreadcrumbPage>
+                    <BreadcrumbPage className='text-white'>Events</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
@@ -113,7 +101,7 @@ export default function AllEvents() {
           </header>
 
           <div className='max-w-7xl mx-auto p-4 md:p-6 lg:p-8'>
-            <div className='bg-modalColor rounded-xl shadow-2xl p-6 border border-white/10 backdrop-blur-lg mb-8'>
+            <div className='bg-modalColor rounded-xl shadow-2xl p-6 border border-gray-800 backdrop-blur-lg mb-8'>
               <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
                 <h2 className='text-xl font-semibold flex items-center gap-2 text-white'>
                   <Calendar className="w-5 h-5 text-blue-400" />
@@ -126,18 +114,18 @@ export default function AllEvents() {
                       placeholder="Search events"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className='w-full md:w-auto pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/5 text-white placeholder-gray-400 border border-white/10'
+                      className='w-full md:w-auto pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/5 text-white placeholder-gray-400 h-[2.7rem]'
                     />
                     <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
                   </div>
                   <div className='flex gap-2'>
-                    <button className='flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-lg hover:bg-white/10 border border-white/10 transition-colors'>
+                    <button className='flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-lg hover:bg-white/10 border border-gray-800 transition-colors'>
                       <Download className="w-4 h-4" />
                       <span className='hidden md:inline'>Export</span>
                     </button>
-                    <button 
+                    <button
                       onClick={() => setIsCreateModalOpen(true)}
-                      className='flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 border border-blue-500/20 transition-all duration-200'
+                      className='flex items-center gap-2 px-4 py-2.5 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 border border-blue-500/20 transition-all duration-200'
                     >
                       <Plus className="w-4 h-4" />
                       <span className='hidden md:inline'>Create Event</span>
@@ -147,15 +135,19 @@ export default function AllEvents() {
               </div>
             </div>
 
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-              {filteredEvents.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  onViewDetails={handleViewDetails}
-                />
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="text-center text-white py-8">Loading events...</div>
+            ) : (
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+                {filteredEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    onViewDetails={handleViewDetails}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {selectedEvent && (
