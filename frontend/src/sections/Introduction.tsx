@@ -32,8 +32,8 @@ function Introduction() {
                 <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
 
                 {/* Content Container */}
-                <div className="relative min-h-screen flex flex-col items-center justify-center">
-                    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
+                <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-8 md:py-12">
+                    <div className="w-full max-w-[1200px] mx-auto flex flex-col items-center">
                         {/* Hero Section */}
                         <AnimatePresence mode="wait">
                             {!showReasons ? (
@@ -42,16 +42,16 @@ function Introduction() {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
-                                    className="text-center mb-16 lg:mb-20"
+                                    className="text-center mb-8 md:mb-12 lg:mb-16"
                                 >
-                                    <h1 className="flex-col items-center font-semibold text-white tracking-tight mb-8">
-                                        <span className="text-4xl sm:text-5xl lg:text-6xl xl:text-5xl mb-2 mr-2">Leading the Future of</span>
-                                        <span className="text-4xl sm:text-5xl lg:text-6xl xl:text-5xl bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                    <h1 className="flex flex-col items-center font-semibold text-white tracking-tight mb-4 md:mb-6">
+                                        <span className="text-3xl xs:text-4xl sm:text-5xl lg:text-6xl mb-2">Leading the Future of</span>
+                                        <span className="text-3xl xs:text-4xl sm:text-5xl lg:text-6xl bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                                             Attendance
                                         </span>
                                     </h1>
 
-                                    <p className="text-lg sm:text-xl lg:text-lg text-gray-200 font-medium leading-relaxed max-w-2xl lg:max-w-3xl mx-auto mb-10 lg:mb-12">
+                                    <p className="text-base sm:text-lg lg:text-xl text-gray-200 font-medium leading-relaxed max-w-[90%] sm:max-w-2xl lg:max-w-3xl mx-auto mb-6 md:mb-8 lg:mb-10">
                                         Leading the future of attendance means redefining how we connect, engage, and innovate to create seamless and impactful experiences.
                                     </p>
 
@@ -59,11 +59,11 @@ function Introduction() {
                                         onClick={() => setShowReasons(true)}
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
-                                        className="group relative inline-flex items-center justify-center gap-2 px-8 sm:px-10 py-4 sm:py-5 text-base sm:text-sm w-[13rem] h-[3rem] font-medium text-white bg-white/10 rounded-2xl backdrop-blur-xl hover:bg-white/20 transition-all duration-500"
+                                        className="group relative inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-medium text-white bg-white/10 rounded-xl sm:rounded-2xl backdrop-blur-xl hover:bg-white/20 transition-all duration-500 w-full max-w-[200px]"
                                     >
                                         <span>Explore More</span>
-                                        <ArrowRight className="w-4 h-4 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform duration-500" />
-                                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
+                                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-500" />
+                                        <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
                                     </motion.button>
                                 </motion.div>
                             ) : (
@@ -77,7 +77,7 @@ function Introduction() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3 }}
-                                className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
+                                className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4"
                             >
                                 {[
                                     { number: '99%', label: 'Attendance Accuracy' },
@@ -86,12 +86,12 @@ function Introduction() {
                                 ].map((stat, index) => (
                                     <div
                                         key={index}
-                                        className="relative group"
+                                        className="relative group w-full"
                                     >
-                                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-pink-400/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                        <div className="relative bg-white/10 backdrop-blur-xl rounded-3xl p-6 sm:p-8 lg:p-10 border border-white/10 text-center transform transition-transform duration-500 group-hover:scale-[1.02] w-[20rem] h-[10rem]">
-                                            <div className="text-3xl sm:text-4xl lg:text-4xl font-semibold text-white mb-2 sm:mb-3">{stat.number}</div>
-                                            <div className="text-base sm:text-lg text-gray-200 font-medium">{stat.label}</div>
+                                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-pink-400/10 rounded-2xl sm:rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                        <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-white/10 text-center transform transition-transform duration-500 group-hover:scale-[1.02] h-full">
+                                            <div className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-white mb-2">{stat.number}</div>
+                                            <div className="text-sm sm:text-base lg:text-lg text-gray-200 font-medium">{stat.label}</div>
                                         </div>
                                     </div>
                                 ))}
