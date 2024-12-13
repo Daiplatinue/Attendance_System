@@ -412,3 +412,75 @@ export default function Home() {
 // }
 
 // =======================================================================================================
+// 
+// LATEST
+// function doPost(e) {
+//   try {
+//     var sheet = SpreadsheetApp.getActiveSheet();
+    
+//     var data = JSON.parse(e.postData.contents);
+    
+//     sheet.appendRow([
+//       data.timestamp,
+//       data.name,
+//       data.subject,
+//       data.section,
+//       data.day,
+//       data.time
+//     ]);
+    
+//     return ContentService.createTextOutput(JSON.stringify({
+//       success: true,
+//       message: 'Attendance recorded successfully',
+//       data: {
+//         timestamp: data.timestamp,
+//         name: data.name,
+//         subject: data.subject,
+//         section: data.section,
+//         day: data.day,
+//         time: data.time
+//       }
+//     }))
+//     .setMimeType(ContentService.MimeType.JSON);
+    
+//   } catch (error) {
+//     return ContentService.createTextOutput(JSON.stringify({
+//       success: false,
+//       error: error.toString()
+//     }))
+//     .setMimeType(ContentService.MimeType.JSON);
+//   }
+// }
+
+// function doGet(e) {
+//   try {
+//     var sheet = SpreadsheetApp.getActiveSheet();
+//     var data = sheet.getDataRange().getValues();
+    
+//     var formattedData = data.slice(1).map(function(row) {
+//       return {
+//         timestamp: row[0],
+//         name: row[1],
+//         subject: row[2],
+//         section: row[3],
+//         day: row[4],
+//         time: row[5]
+//       };
+//     });
+    
+//     return ContentService.createTextOutput(JSON.stringify({
+//       success: true,
+//       data: formattedData
+//     }))
+//     .setMimeType(ContentService.MimeType.JSON);
+    
+//   } catch (error) {
+//     return ContentService.createTextOutput(JSON.stringify({
+//       success: false,
+//       error: error.toString()
+//     }))
+//     .setMimeType(ContentService.MimeType.JSON);
+//   }
+// }
+
+// ================================================================================
