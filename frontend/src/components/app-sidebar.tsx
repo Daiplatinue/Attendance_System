@@ -56,7 +56,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           "Authorization": `Bearer ${token}`
         }
       });
-      
+
       if (response.status === 201) {
         setUserData(response.data.user);
       } else {
@@ -82,6 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {
         name: "Contents",
         items: [
+          { label: "Schedules", url: "/viewSchedule" },
           { label: "To-do List", url: "/todolist" },
           { label: "Dashboard", url: "/" },
           { label: "View Events", url: "/allevents" },

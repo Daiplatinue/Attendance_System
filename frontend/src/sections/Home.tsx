@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar"
 
 import { Button } from '@/components/ui/button';
-import { ChevronsDown, ChevronsLeftRightEllipsis, ChevronsUp, Download, LayoutGrid, List, Medal, Trophy, Crown, Award } from 'lucide-react'
+import { ChevronsDown, ChevronsLeftRightEllipsis, ChevronsUp, LayoutGrid, List, Medal, Trophy, Crown, Award } from 'lucide-react'
 import { Toaster } from 'sonner';
 import { AttendanceRecorder } from '@/sections/componentStyles/AttendanceDialog';
 
@@ -40,6 +40,7 @@ interface UserData {
   u_contact: string;
   u_address: string;
   u_profile: string;
+  u_section: string;
 }
 
 interface LeaderboardPosition {
@@ -70,7 +71,8 @@ export default function Home() {
     u_email: '',
     u_contact: '',
     u_address: '',
-    u_profile: ''
+    u_profile: '',
+    u_section: '',
   });
   const [leaderboardPosition, setLeaderboardPosition] = useState<LeaderboardPosition>({
     rank: 0,
@@ -234,10 +236,6 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                 <h1 className="text-xl font-semibold text-white">Attendance Overview</h1>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
-                  <Button className="gap-2 bg-transparent w-full sm:w-auto border-[1px]">
-                    <Download size={16} />
-                    View Badges
-                  </Button>
                   <AttendanceRecorder />
                 </div>
               </div>

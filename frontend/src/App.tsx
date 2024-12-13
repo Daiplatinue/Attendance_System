@@ -42,6 +42,9 @@ import MeetingParent from './sections/Meeting-Parent';
 
 import Introduction from './sections/Introduction';
 
+import Schedule from './sections/Schedule';
+import ViewSchedule from './sections/ViewSchedule';
+
 
 const App: React.FC = () => {
   return (
@@ -89,6 +92,10 @@ const App: React.FC = () => {
 
 
         <Route path='/introduction' element={<Introduction />} />
+
+
+        <Route path='/schedule' element={<Schedule />} />
+        <Route path='/viewSchedule' element={<ViewSchedule />} />
 
 
       </Routes>

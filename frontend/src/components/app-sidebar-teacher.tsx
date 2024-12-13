@@ -31,6 +31,7 @@ const data = {
         { label: "Event", url: "/events-teacher" },
         { label: "Meetings", url: "/meeting" },
         { label: "Dashboard", url: "/teacher" },
+        { label: "Schedules", url: "/schedule" },
         { label: "Leaderboard", url: "/leaderboard-teacher" },
         { label: "Announcement", url: "/announce-teacher" },
       ],

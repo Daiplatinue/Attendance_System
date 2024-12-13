@@ -9,6 +9,7 @@ interface UserInfoProps {
     u_email: string;
     u_contact: string;
     u_address: string;
+    u_section: string;
   };
 }
 
@@ -18,8 +19,8 @@ export const UserInfo: React.FC<UserInfoProps> = ({ userData }) => {
       <h2 className="text-2xl sm:text-3xl font-semibold mb-1">{userData.u_fullname}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
         <div className="mt-3 sm:mt-5">
-          <p className="text-zinc-400 text-sm mb-1">Role</p>
-          <p>{userData.u_role}</p>
+          <p className="text-zinc-400 text-sm mb-1">Section</p>
+          <p>{userData.u_section}</p>
         </div>
         <div className="mt-3 sm:mt-5">
           <p className="text-zinc-400 text-sm mb-1">Department</p>

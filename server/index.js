@@ -15,6 +15,8 @@ import taskRouter from './routes/notes.js';
 import teacherRouter from './routes/teacher.js';
 import meetingRoutes from './routes/meeting.js';
 
+import scheduleRouter from './routes/schedule.js';
+
 dotenv.config()
 
 const app = express()
@@ -36,6 +38,7 @@ app.use('/announcements', announcementRouter); // Mount announcement routes
 app.use('/api', eventRouter); // Mount event routes under /api
 app.use('/profiles', express.static(path.join(__dirname, 'profiles')));
 app.use(leaderboardRoutes);
+app.use('/api', scheduleRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

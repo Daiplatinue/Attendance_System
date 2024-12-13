@@ -33,6 +33,7 @@ export function CreateModal({ isOpen, onClose, onSuccess }: CreateModalProps) {
       u_contact: '',
       u_address: '',
       u_password: '',
+      u_section: '',
     }
   });
 
@@ -124,6 +125,14 @@ export function CreateModal({ isOpen, onClose, onSuccess }: CreateModalProps) {
                 <Label>Department</Label>
                 <Input
                   {...register('u_department')}
+                  className="bg-white/5 border-white/10 text-white"
+                />
+              </div>
+
+              <div>
+                <Label>Section</Label>
+                <Input
+                  {...register('u_section')}
                   className="bg-white/5 border-white/10 text-white"
                 />
               </div>

@@ -169,7 +169,7 @@ router.post('/register', async (req, res) => {
 router.post('/createAdmin', async (req, res) => {
     const { 
         u_fullname, u_role, u_department, u_year, 
-        u_email, u_contact, u_address, u_password 
+        u_email, u_contact, u_address, u_password, u_section 
     } = req.body;
     
     try {
@@ -193,12 +193,12 @@ router.post('/createAdmin', async (req, res) => {
                 `INSERT INTO acc_tb (
                     u_fullname, u_role, u_department, u_year,
                     u_email, u_contact, u_address, u_password,
-                    u_profile, u_date
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    u_profile, u_date, u_section
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     u_fullname, u_role, u_department, u_year,
                     u_email, u_contact, u_address, u_password,
-                    'default.jpg', currentDate
+                    'default.jpg', currentDate, u_section
                 ]
             );
 
