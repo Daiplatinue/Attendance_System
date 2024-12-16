@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,13 +17,21 @@ interface CreateModalProps {
   onSuccess: () => void;
 }
 
+interface User {
+  u_id: number;
+  u_fullname: string;
+  u_role: string;
+}
+
 export function CreateModal({ isOpen, onClose, onSuccess }: CreateModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string>('');
   const [qrCode, setQrCode] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [selectedRole, setSelectedRole] = useState('parent');
 
-  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm({
     defaultValues: {
       u_fullname: '',
       u_role: 'parent',
@@ -34,8 +42,28 @@ export function CreateModal({ isOpen, onClose, onSuccess }: CreateModalProps) {
       u_address: '',
       u_password: '',
       u_section: '',
+      u_studentParentID: ''
     }
   });
+
+  const currentRole = watch('u_role');
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const roleToFetch = currentRole === 'student' ? 'parent' : 'student';
+        const response = await axios.get(`${API_URL}/users/${roleToFetch}`);
+        setUsers(response.data);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        toast.error('Failed to fetch users');
+      }
+    };
+
+    if (currentRole === 'student' || currentRole === 'parent') {
+      fetchUsers();
+    }
+  }, [currentRole]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -106,13 +134,16 @@ export function CreateModal({ isOpen, onClose, onSuccess }: CreateModalProps) {
               <div>
                 <Label>Role</Label>
                 <Select
-                  onValueChange={(value) => setValue('u_role', value)}
+                  onValueChange={(value) => {
+                    setValue('u_role', value);
+                    setSelectedRole(value);
+                  }}
                   defaultValue="parent"
                 >
                   <SelectTrigger className="bg-white/5 border-white/10 text-white">
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
-                  <SelectContent className="bg-modalColor border-white/10">
+                  <SelectContent className="bg-modalColor border-white/10 text-white">
                     <SelectItem value="student">Student</SelectItem>
                     <SelectItem value="teacher">Teacher</SelectItem>
                     <SelectItem value="parent">Parent</SelectItem>
@@ -120,6 +151,46 @@ export function CreateModal({ isOpen, onClose, onSuccess }: CreateModalProps) {
                   </SelectContent>
                 </Select>
               </div>
+
+              {currentRole === 'student' && (
+                <div>
+                  <Label>Parent</Label>
+                  <Select
+                    onValueChange={(value) => setValue('u_studentParentID', value)}
+                  >
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                      <SelectValue placeholder="Select parent" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-modalColor border-white/10 text-white">
+                      {users.map((user) => (
+                        <SelectItem key={user.u_id} value={user.u_id.toString()}>
+                          {user.u_fullname}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {currentRole === 'parent' && (
+                <div>
+                  <Label>Student</Label>
+                  <Select
+                    onValueChange={(value) => setValue('u_studentParentID', value)}
+                  >
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                      <SelectValue placeholder="Select student" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-modalColor border-white/10 text-white">
+                      {users.map((user) => (
+                        <SelectItem key={user.u_id} value={user.u_id.toString()}>
+                          {user.u_fullname}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div>
                 <Label>Department</Label>

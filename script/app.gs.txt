@@ -1,0 +1,95 @@
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
+    
+    // Check if there's an existing record for the student and subject on the same date
+    var lastRow = sheet.getLastRow();
+    var found = false;
+    
+    if (lastRow > 1) {  // Skip header row
+      var values = sheet.getRange(2, 1, lastRow - 1, 8).getValues(); // Added column for status
+      for (var i = values.length - 1; i >= 0; i--) {
+        if (values[i][1] === data.studentName && 
+            values[i][2] === data.ts_subject && 
+            values[i][0].toDateString() === new Date(data.ts_date).toDateString() &&
+            !values[i][6]) {  // Check if clockedOut is empty
+          // Update existing record with clockedOut time
+          sheet.getRange(i + 2, 7).setValue(data.ts_clockedIn);
+          found = true;
+          break;
+        }
+      }
+    }
+    
+    // If no existing record found, create new entry
+    if (!found) {
+      sheet.appendRow([
+        data.ts_date,
+        data.studentName,
+        data.ts_subject,
+        data.section,
+        data.day,
+        data.ts_clockedIn,
+        data.ts_clockedOut,
+        data.ts_status  // Add status to the sheet
+      ]);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      message: found ? 'Attendance updated successfully' : 'Attendance recorded successfully',
+      data: {
+        date: data.ts_date,
+        studentName: data.studentName,
+        subject: data.ts_subject,
+        section: data.section,
+        day: data.day,
+        clockedIn: data.ts_clockedIn,
+        clockedOut: data.ts_clockedOut,
+        status: data.ts_status
+      }
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: error.toString()
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSheet();
+    var data = sheet.getDataRange().getValues();
+    
+    var formattedData = data.slice(1).map(function(row) {
+      return {
+        date: row[0],
+        studentName: row[1],
+        subject: row[2],
+        section: row[3],
+        day: row[4],
+        clockedIn: row[5],
+        clockedOut: row[6],
+        status: row[7]
+      };
+    });
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      data: formattedData
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: error.toString()
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+  }
+}

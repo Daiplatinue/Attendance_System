@@ -31,15 +31,66 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
   });
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [previewUrl, setPreviewUrl] = React.useState('');
+  const [isValidUrl, setIsValidUrl] = React.useState(true);
+
+  const validateImageUrl = (url: string) => {
+    if (!url) return true; // Empty URL is considered valid
+    const pattern = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i;
+    return pattern.test(url);
+  };
+
+  const handleAvatarUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setFormData({ ...formData, avatarUrl: url });
+    setIsValidUrl(validateImageUrl(url));
+    setPreviewUrl(url);
+  };
+
+  const handleImageError = () => {
+    setIsValidUrl(false);
+    toast.error('Invalid image URL. Please provide a valid image URL.');
+  };
+
+  const validateForm = () => {
+    if (!formData.name) return 'Event name is required';
+    if (!formData.type) return 'Event type is required';
+    if (!formData.location) return 'Location is required';
+    if (!formData.startDate) return 'Start date is required';
+    if (!formData.endDate) return 'End date is required';
+    if (!formData.startTime) return 'Start time is required';
+    if (!formData.endTime) return 'End time is required';
+    if (!formData.departments.length) return 'At least one department is required';
+    if (!formData.organizer) return 'Organizer is required';
+    if (!formData.description) return 'Description is required';
+    return null;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validationError = validateForm();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    if (formData.avatarUrl && !isValidUrl) {
+      toast.error('Please provide a valid image URL');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      // Ensure departments is properly formatted
+      const departmentsString = formData.departments.join(', ');
+
       const eventData = {
         ...formData,
+        departments: departmentsString,
         status: 'Upcoming',
+        avatarUrl: isValidUrl ? formData.avatarUrl : ''
       };
 
       const response = await axios.post('http://localhost:3000/api/createEvent', eventData);
@@ -61,6 +112,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
           description: '',
           avatarUrl: '',
         });
+        setPreviewUrl('');
       }
     } catch (error: any) {
       console.error('Error creating event:', error);
@@ -173,7 +225,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="departments">Departments</Label>
+            <Label htmlFor="departments">Departments (comma-separated)</Label>
             <Input
               id="departments"
               value={formData.departments.join(', ')}
@@ -203,10 +255,24 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
             <Input
               id="avatarUrl"
               value={formData.avatarUrl}
-              onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
-              className="bg-white/5 border-white/10 text-white"
-              placeholder="https://example.com/avatar.png"
+              onChange={handleAvatarUrlChange}
+              className={`bg-white/5 border-white/10 text-white ${!isValidUrl && formData.avatarUrl ? 'border-red-500' : ''}`}
+              placeholder="https://example.com/image.jpg"
             />
+            {!isValidUrl && formData.avatarUrl && (
+              <p className="text-red-500 text-sm mt-1">Please enter a valid image URL (jpg, jpeg, png, gif, webp)</p>
+            )}
+            {isValidUrl && previewUrl && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-400 mb-2">Preview:</p>
+                <img
+                  src={previewUrl}
+                  alt="Avatar preview"
+                  className="w-32 h-32 object-cover rounded-lg"
+                  onError={handleImageError}
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -232,7 +298,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit }: CreateEventModal
             </Button>
             <Button 
               type="submit" 
-              disabled={isSubmitting}
+              disabled={isSubmitting || (formData.avatarUrl !== '' && !isValidUrl)}
               className="bg-blue-500 hover:bg-blue-600"
             >
               {isSubmitting ? 'Creating...' : 'Create Event'}

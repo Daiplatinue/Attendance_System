@@ -25,6 +25,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -32,6 +38,8 @@ import {
 } from "@/components/ui/sidebar"
 import { SwitchModal } from '@/sections/componentStyles/SwitchModal'
 import { toast } from 'sonner'
+
+import { AccountInfo } from "@/sections/MyAccountInfo"
 
 interface UserData {
   u_fullname: string;
@@ -41,6 +49,12 @@ interface UserData {
   u_email: string;
   u_contact: string;
   u_address: string;
+}
+
+interface Notification {
+  u_fn: string;
+  nt_description: string;
+  ts_date: string;
 }
 
 export function NavUser({
@@ -55,6 +69,8 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
   const [isSwitchModalOpen, setIsSwitchModalOpen] = useState(false)
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false)
+  const [notifications, setNotifications] = useState<Notification[]>([])
   const [userData, setUserData] = useState<UserData>({
     u_fullname: '',
     u_role: '',
@@ -78,7 +94,7 @@ export function NavUser({
           "Authorization": `Bearer ${token}`
         }
       });
-      
+
       if (response.status === 201) {
         setUserData(response.data.user);
       } else {
@@ -87,6 +103,21 @@ export function NavUser({
     } catch (err) {
       navigate('/introduction');
       console.error(err);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:3000/api/notifications', {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      setNotifications(response.data);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      toast.error('Failed to fetch notifications');
     }
   };
 
@@ -103,12 +134,12 @@ export function NavUser({
     try {
       const accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
       const selectedAccount = accounts.find((acc: any) => acc.id === accountId);
-      
+
       if (selectedAccount) {
         localStorage.setItem('token', selectedAccount.token);
         setIsSwitchModalOpen(false);
         toast.success('Account switched successfully');
-        
+
         switch (selectedAccount.type) {
           case 'student':
             navigate('/');
@@ -132,6 +163,13 @@ export function NavUser({
       toast.error('Failed to switch account');
     }
   };
+
+  const handleNotificationClick = () => {
+    fetchNotifications();
+    setIsNotificationModalOpen(true);
+  };
+
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   return (
     <>
@@ -178,7 +216,7 @@ export function NavUser({
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   className="cursor-pointer"
                   onClick={() => setIsSwitchModalOpen(true)}
                 >
@@ -188,7 +226,10 @@ export function NavUser({
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => setIsAccountModalOpen(true)}
+                >
                   <UserRound />
                   Account
                 </DropdownMenuItem>
@@ -196,7 +237,10 @@ export function NavUser({
                   <Tags />
                   Sessions
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={handleNotificationClick}
+                >
                   <Bell />
                   Notifications
                 </DropdownMenuItem>
@@ -216,6 +260,35 @@ export function NavUser({
         onClose={() => setIsSwitchModalOpen(false)}
         onSwitch={handleSwitchAccount}
       />
+
+      <AccountInfo
+        isOpen={isAccountModalOpen}
+        onClose={() => setIsAccountModalOpen(false)}
+        userData={userData}
+      />
+
+      <Dialog open={isNotificationModalOpen} onOpenChange={setIsNotificationModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Notifications</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[400px] overflow-y-auto">
+            {notifications.length > 0 ? (
+              notifications.map((notification, index) => (
+                <div key={index} className="mb-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="font-semibold">{notification.u_fn}</p>
+                  <p className="text-sm text-gray-600">{notification.nt_description}</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {new Date(notification.ts_date).toLocaleTimeString()}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-500">No notifications found</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

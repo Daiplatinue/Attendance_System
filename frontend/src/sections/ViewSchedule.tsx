@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AppSidebar } from "@/components/app-sidebar-teacher";
+import { AppSidebar } from "@/components/app-sidebar";
 import {
     Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
     BreadcrumbSeparator,

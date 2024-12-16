@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar"
 
 import { Button } from '@/components/ui/button';
-import { ChevronsDown, ChevronsLeftRightEllipsis, ChevronsUp, LayoutGrid, List, Medal, Trophy, Crown, Award } from 'lucide-react'
+import { ChevronsDown, ChevronsLeftRightEllipsis, ChevronsUp, LayoutGrid, List, Trophy, Crown, Award } from 'lucide-react'
 import { Toaster } from 'sonner';
 import { AttendanceRecorder } from '@/sections/componentStyles/AttendanceDialog';
 
@@ -48,20 +48,17 @@ interface LeaderboardPosition {
   total: number;
 }
 
-const attendanceData = [
-  { date: 'March 08, 2024', status: 'On Time', checkIn: '08:45', checkOut: '17:10', subject: 'Software Engineering' },
-  { date: 'March 07, 2024', status: 'Late', checkIn: '09:15', checkOut: '17:25', subject: 'Database Management' },
-  { date: 'March 06, 2024', status: 'On Time', checkIn: '08:30', checkOut: '17:05', subject: 'Web Development' },
-  { date: 'March 05, 2024', status: 'Absent', checkIn: '-', checkOut: '-', subject: 'Computer Networks' },
-  { date: 'March 04, 2024', status: 'On Time', checkIn: '08:40', checkOut: '17:20', subject: 'Data Structures' },
-  { date: 'March 03, 2024', status: 'Late', checkIn: '09:05', checkOut: '17:15', subject: 'Operating Systems' },
-  { date: 'March 02, 2024', status: 'On Time', checkIn: '08:50', checkOut: '17:00', subject: 'Software Engineering' },
-  { date: 'March 01, 2024', status: 'Absent', checkIn: '-', checkOut: '-', subject: 'Database Management' },
-  { date: 'February 29, 2024', status: 'On Time', checkIn: '08:35', checkOut: '17:10', subject: 'Web Development' },
-];
+interface AttendanceRecord {
+  ts_subject: string;
+  ts_date: string;
+  ts_clockedIn: string;
+  ts_clockedOut: string | null;
+  ts_status: string;
+}
 
 export default function Home() {
   const navigate = useNavigate();
+  
   const [userData, setUserData] = useState<UserData>({
     u_id: 0,
     u_fullname: '',
@@ -74,10 +71,36 @@ export default function Home() {
     u_profile: '',
     u_section: '',
   });
+  
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [leaderboardPosition, setLeaderboardPosition] = useState<LeaderboardPosition>({
     rank: 0,
     total: 0
   });
+
+  const [attendanceSummary, setAttendanceSummary] = useState({
+    totalAttendance: 0,
+    lateClockedIn: 0,
+    absent: 0,
+    predicate: '',
+  });
+
+  const fetchAttendanceRecords = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get<AttendanceRecord[]>('http://localhost:3000/api/attendance-records', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        setAttendanceRecords(response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching attendance records:', err);
+    }
+  }, []);
 
   const fetchAttendanceSummary = useCallback(async (): Promise<void> => {
     try {
@@ -119,13 +142,6 @@ export default function Home() {
       console.error('Error fetching leaderboard position:', err);
     }
   }, [userData.u_id]);
-  
-  const [attendanceSummary, setAttendanceSummary] = useState({
-    totalAttendance: 0,
-    lateClockedIn: 0,
-    absent: 0,
-    predicate: '',
-  });
 
   const getTrophyDisplay = () => {
     if (leaderboardPosition.rank === 1) {
@@ -173,24 +189,11 @@ export default function Home() {
     }
   }, [navigate]);
 
-  const fetchImage = useCallback(async (): Promise<void> => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.get('http://localhost:3000/auth/fetchProfile', {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  }, []);
-
   useEffect(() => {
     fetchUser();
-    fetchImage();
     fetchAttendanceSummary();
-  }, [fetchUser, fetchImage, fetchAttendanceSummary]);
+    fetchAttendanceRecords();
+  }, [fetchUser, fetchAttendanceSummary, fetchAttendanceRecords]);
 
   useEffect(() => {
     if (userData.u_id) {
@@ -309,36 +312,43 @@ export default function Home() {
                     </div>
                   </div>
 
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {attendanceData.map((item, index) => (
-                  <div key={index} className="bg-container border border-gray-800 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <p className="text-sm">{item.date}</p>
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        item.status === 'On Time' ? 'bg-emerald-400/10 text-emerald-400' :
-                        item.status === 'Late' ? 'bg-yellow-400/10 text-yellow-400' :
-                        'bg-red-400/10 text-red-400'
-                      }`}>
-                        {item.status}
-                      </span>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-zinc-400 text-xs mb-1">Subject</p>
-                      <p className="font-semibold text-white">{item.subject}</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-zinc-400 text-xs mb-1">Time Clocked-In</p>
-                        <p className="font-semibold">{item.checkIn}</p>
-                      </div>
-                      <div>
-                        <p className="text-zinc-400 text-xs mb-1">Time Clocked-Out</p>
-                        <p className="font-semibold">{item.checkOut}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+        {attendanceRecords.map((item, index) => (
+          <div key={index} className="bg-container border border-gray-800 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm">{new Date(item.ts_date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: '2-digit'
+              })}</p>
+              <span className={`text-xs px-2 py-1 rounded ${
+                item.ts_status === 'On Time' ? 'bg-emerald-400/10 text-emerald-400' :
+                item.ts_status === 'Late' ? 'bg-yellow-400/10 text-yellow-400' :
+                'bg-red-400/10 text-red-400'
+              }`}>
+                {item.ts_status}
+              </span>
+            </div>
+            <div className="mb-4">
+              <p className="text-zinc-400 text-xs mb-1">Subject</p>
+              <p className="font-semibold text-white">{item.ts_subject}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-zinc-400 text-xs mb-1">Time Clocked-In</p>
+                <p className="font-semibold">{item.ts_clockedIn || '-'}</p>
               </div>
+              <div>
+                <p className="text-zinc-400 text-xs mb-1">Time Clocked-Out</p>
+                <p className="font-semibold">{item.ts_clockedOut || '-'}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+              
                 </div>
               </div>
             </div>
@@ -392,53 +402,56 @@ export default function Home() {
 
 // GET
 
-// function doGet(e) {
-//   var sheet = SpreadsheetApp.getActiveSheet();
-//   var data = sheet.getDataRange().getValues();
-  
-//   var formattedData = data.map(function(row) {
-//     return {
-//       timestamp: row[0],
-//       name: row[1]
-//     };
-//   });
-  
-//   var callback = e.parameter.callback;
-  
-//   var response = ContentService.createTextOutput(callback + '(' + JSON.stringify(formattedData) + ')')
-//     .setMimeType(ContentService.MimeType.JAVASCRIPT);
-    
-//   return response;
-// }
-
-// =======================================================================================================
-// 
-// LATEST
 // function doPost(e) {
 //   try {
 //     var sheet = SpreadsheetApp.getActiveSheet();
-    
 //     var data = JSON.parse(e.postData.contents);
     
-//     sheet.appendRow([
-//       data.timestamp,
-//       data.name,
-//       data.subject,
-//       data.section,
-//       data.day,
-//       data.time
-//     ]);
+//     // Check if there's an existing record for the student and subject on the same date
+//     var lastRow = sheet.getLastRow();
+//     var found = false;
+    
+//     if (lastRow > 1) {  // Skip header row
+//       var values = sheet.getRange(2, 1, lastRow - 1, 8).getValues(); // Added column for status
+//       for (var i = values.length - 1; i >= 0; i--) {
+//         if (values[i][1] === data.studentName && 
+//             values[i][2] === data.ts_subject && 
+//             values[i][0].toDateString() === new Date(data.ts_date).toDateString() &&
+//             !values[i][6]) {  // Check if clockedOut is empty
+//           // Update existing record with clockedOut time
+//           sheet.getRange(i + 2, 7).setValue(data.ts_clockedIn);
+//           found = true;
+//           break;
+//         }
+//       }
+//     }
+    
+//     // If no existing record found, create new entry
+//     if (!found) {
+//       sheet.appendRow([
+//         data.ts_date,
+//         data.studentName,
+//         data.ts_subject,
+//         data.section,
+//         data.day,
+//         data.ts_clockedIn,
+//         data.ts_clockedOut,
+//         data.ts_status  // Add status to the sheet
+//       ]);
+//     }
     
 //     return ContentService.createTextOutput(JSON.stringify({
 //       success: true,
-//       message: 'Attendance recorded successfully',
+//       message: found ? 'Attendance updated successfully' : 'Attendance recorded successfully',
 //       data: {
-//         timestamp: data.timestamp,
-//         name: data.name,
-//         subject: data.subject,
+//         date: data.ts_date,
+//         studentName: data.studentName,
+//         subject: data.ts_subject,
 //         section: data.section,
 //         day: data.day,
-//         time: data.time
+//         clockedIn: data.ts_clockedIn,
+//         clockedOut: data.ts_clockedOut,
+//         status: data.ts_status
 //       }
 //     }))
 //     .setMimeType(ContentService.MimeType.JSON);
@@ -459,12 +472,14 @@ export default function Home() {
     
 //     var formattedData = data.slice(1).map(function(row) {
 //       return {
-//         timestamp: row[0],
-//         name: row[1],
+//         date: row[0],
+//         studentName: row[1],
 //         subject: row[2],
 //         section: row[3],
 //         day: row[4],
-//         time: row[5]
+//         clockedIn: row[5],
+//         clockedOut: row[6],
+//         status: row[7]
 //       };
 //     });
     
@@ -482,5 +497,4 @@ export default function Home() {
 //     .setMimeType(ContentService.MimeType.JSON);
 //   }
 // }
-
 // ================================================================================

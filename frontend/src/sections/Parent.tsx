@@ -13,20 +13,19 @@ import {
 } from "@/components/ui/sidebar"
 
 import { Button } from '@/components/ui/button';
-import { ChevronsDown, ChevronsLeftRightEllipsis, ChevronsUp, Download, LayoutGrid, List, Medal, Trophy, Crown, Award } from 'lucide-react'
+import { ChevronsDown, ChevronsLeftRightEllipsis, ChevronsUp, LayoutGrid, List, Trophy, Crown, Award } from 'lucide-react'
 import { Toaster } from 'sonner';
-import { AttendanceRecorder } from '@/sections/componentStyles/AttendanceDialog';
-
-import BadgeWorking from "./componentStyles/Badge-Working";
-import BadgePunctual from "./componentStyles/Badge-Punctual";
-import BadgeConsistent from "./componentStyles/Badge-Consistent"; 
-import BadgeWHonor from "./componentStyles/Badge-WHonor";
-import BadgeWHHonor from "./componentStyles/Badge-WHHonor";
-import BadgeDeans from "./componentStyles/Badge-Deans";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useEffect, useState, useCallback } from "react";
 import { UserInfo } from "@/sections/componentStyles/UserInfo";
+
+import BadgeWorking from "./componentStyles/Badge-Working";
+import BadgePunctual from "./componentStyles/Badge-Punctual";
+import BadgeConsistent from "./componentStyles/Badge-Consistent";
+import BadgeWHonor from "./componentStyles/Badge-WHonor";
+import BadgeWHHonor from "./componentStyles/Badge-WHHonor";
+import BadgeDeans from "./componentStyles/Badge-Deans";
 
 import av1 from '@/sections/assets/av3.jpg';
 
@@ -40,6 +39,8 @@ interface UserData {
   u_contact: string;
   u_address: string;
   u_profile: string;
+  u_section: string;
+  u_studentParentID: number | null;
 }
 
 interface LeaderboardPosition {
@@ -47,55 +48,57 @@ interface LeaderboardPosition {
   total: number;
 }
 
-const attendanceData = [
-  { date: 'March 08, 2024', status: 'On Time', checkIn: '08:45', checkOut: '17:10', subject: 'Software Engineering' },
-  { date: 'March 07, 2024', status: 'Late', checkIn: '09:15', checkOut: '17:25', subject: 'Database Management' },
-  { date: 'March 06, 2024', status: 'On Time', checkIn: '08:30', checkOut: '17:05', subject: 'Web Development' },
-  { date: 'March 05, 2024', status: 'Absent', checkIn: '-', checkOut: '-', subject: 'Computer Networks' },
-  { date: 'March 04, 2024', status: 'On Time', checkIn: '08:40', checkOut: '17:20', subject: 'Data Structures' },
-  { date: 'March 03, 2024', status: 'Late', checkIn: '09:05', checkOut: '17:15', subject: 'Operating Systems' },
-  { date: 'March 02, 2024', status: 'On Time', checkIn: '08:50', checkOut: '17:00', subject: 'Software Engineering' },
-  { date: 'March 01, 2024', status: 'Absent', checkIn: '-', checkOut: '-', subject: 'Database Management' },
-  { date: 'February 29, 2024', status: 'On Time', checkIn: '08:35', checkOut: '17:10', subject: 'Web Development' },
-];
+interface AttendanceRecord {
+  ts_subject: string;
+  ts_date: string;
+  ts_clockedIn: string;
+  ts_clockedOut: string | null;
+  ts_status: string;
+}
 
-export default function Home() {
+export default function Parent() {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState<UserData>({
-    u_id: 0,
-    u_fullname: '',
-    u_role: '',
-    u_department: '',
-    u_year: '',
-    u_email: '',
-    u_contact: '',
-    u_address: '',
-    u_profile: ''
-  });
+  const [parentData, setParentData] = useState<UserData | null>(null);
+  const [studentData, setStudentData] = useState<UserData | null>(null);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [leaderboardPosition, setLeaderboardPosition] = useState<LeaderboardPosition>({
     rank: 0,
     total: 0
   });
+  const [attendanceSummary, setAttendanceSummary] = useState({
+    totalAttendance: 0,
+    lateClockedIn: 0,
+    absent: 0,
+    predicate: '',
+  });
 
-  const fetchAttendanceSummary = useCallback(async (): Promise<void> => {
+  const fetchStudentAttendance = async (studentId: number) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3000/auth/attendanceSummary', {
+      const attendanceResponse = await axios.get(`http://localhost:3000/auth/attendance-records/${studentId}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
-        },
+          "Authorization": `Bearer ${token}`
+        }
       });
-  
-      if (response.status === 200) {
-        setAttendanceSummary(response.data);
+      if (attendanceResponse.status === 200) {
+        setAttendanceRecords(attendanceResponse.data);
       }
-    } catch (err) {
-      console.error('Error fetching attendance summary:', err);
+
+      const summaryResponse = await axios.get(`http://localhost:3000/auth/attendanceSummary/${studentId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (summaryResponse.status === 200) {
+        setAttendanceSummary(summaryResponse.data);
+      }
+    } catch (error) {
+      console.error('Error fetching student attendance:', error);
     }
-  }, []);
+  };
 
   const fetchLeaderboardPosition = useCallback(async (): Promise<void> => {
-    if (!userData.u_id) return;
+    if (!studentData?.u_id) return; // Changed from userData to studentData
 
     try {
       const token = localStorage.getItem('token');
@@ -107,7 +110,7 @@ export default function Home() {
 
       if (response.status === 200) {
         const leaderboardData = response.data;
-        const userIndex = leaderboardData.findIndex((user: any) => user.u_id === userData.u_id);
+        const userIndex = leaderboardData.findIndex((user: any) => user.u_id === studentData.u_id); // Changed from userData to studentData
         setLeaderboardPosition({
           rank: userIndex + 1,
           total: leaderboardData.length
@@ -116,14 +119,7 @@ export default function Home() {
     } catch (err) {
       console.error('Error fetching leaderboard position:', err);
     }
-  }, [userData.u_id]);
-  
-  const [attendanceSummary, setAttendanceSummary] = useState({
-    totalAttendance: 0,
-    lateClockedIn: 0,
-    absent: 0,
-    predicate: '',
-  });
+  }, [studentData?.u_id]);
 
   const getTrophyDisplay = () => {
     if (leaderboardPosition.rank === 1) {
@@ -151,17 +147,29 @@ export default function Home() {
     return null;
   };
 
-  const fetchUser = useCallback(async (): Promise<void> => {
+  const fetchParentData = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3000/auth/home', {
+      const response = await axios.get('http://localhost:3000/auth/parent', {
         headers: {
           "Authorization": `Bearer ${token}`
         }
       });
-      
+
       if (response.status === 201) {
-        setUserData(response.data.user);
+        setParentData(response.data.user);
+        if (response.data.user.u_studentParentID) {
+          const studentId = response.data.user.u_studentParentID;
+          const studentResponse = await axios.get(`http://localhost:3000/auth/student/${studentId}`, {
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          });
+          if (studentResponse.status === 200) {
+            setStudentData(studentResponse.data.user);
+            fetchStudentAttendance(studentId);
+          }
+        }
       } else {
         navigate('/introduction');
       }
@@ -171,30 +179,15 @@ export default function Home() {
     }
   }, [navigate]);
 
-  const fetchImage = useCallback(async (): Promise<void> => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.get('http://localhost:3000/auth/fetchProfile', {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  }, []);
+  useEffect(() => {
+    fetchParentData();
+  }, [fetchParentData]);
 
   useEffect(() => {
-    fetchUser();
-    fetchImage();
-    fetchAttendanceSummary();
-  }, [fetchUser, fetchImage, fetchAttendanceSummary]);
-
-  useEffect(() => {
-    if (userData.u_id) {
+    if (studentData?.u_id) { // Changed from userData.u_id to studentData?.u_id
       fetchLeaderboardPosition();
     }
-  }, [userData.u_id, fetchLeaderboardPosition]);
+  }, [studentData?.u_id, fetchLeaderboardPosition]);
 
   return (
     <div>
@@ -219,10 +212,8 @@ export default function Home() {
               <Separator orientation="vertical" className="mr-2 h-4" />
               <Breadcrumb>
                 <BreadcrumbList>
-                  <BreadcrumbItem className="hidden md:block">
-                  </BreadcrumbItem>
                   <BreadcrumbItem>
-                    <BreadcrumbPage className="text-white">Dashboard</BreadcrumbPage>
+                    <BreadcrumbPage className="text-white">Parent Dashboard</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
@@ -232,27 +223,21 @@ export default function Home() {
           <div className="p-4 sm:p-6">
             <div className="mb-6 sm:mb-8">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-                <h1 className="text-xl font-semibold text-white">Attendance Overview</h1>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
-                  <Button className="gap-2 bg-transparent w-full sm:w-auto border-[1px]">
-                    <Download size={16} />
-                    View Badges
-                  </Button>
-                </div>
+                <h1 className="text-xl font-semibold text-white">Student Overview</h1>
               </div>
 
               <div className="bg-modalColor rounded-xl p-4 sm:p-6 border-[1px] border-gray-800">
                 <div className="flex flex-col md:flex-row gap-6 mb-8 items-center">
-                  <img 
+                  <img
                     src={av1}
                     className="h-[15rem] w-[15rem] rounded-3xl"
                   />
-                  <UserInfo userData={userData} />
+                  {studentData && <UserInfo userData={studentData} parentData={parentData} />}
                   <div className="flex-grow flex justify-center mt-4 md:mt-0">
                     <div className="flex flex-col items-center">
                       <p className="mb-3 text-center" style={{ color: leaderboardPosition.rank <= 3 ? '#FFD700' : '#4299E1' }}>
-                        {leaderboardPosition.rank === 0 ? 'Loading...' : 
-                         `Rank ${leaderboardPosition.rank} of ${leaderboardPosition.total} Students`}
+                        {leaderboardPosition.rank === 0 ? 'Loading...' :
+                          `Rank ${leaderboardPosition.rank} of ${leaderboardPosition.total} Students`}
                       </p>
                       {getTrophyDisplay()}
                       <div className={`grid grid-cols-3 gap-4 mt-3 ${!getTrophyDisplay() ? 'mt-8' : ''}`}>
@@ -311,35 +296,38 @@ export default function Home() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {attendanceData.map((item, index) => (
-                  <div key={index} className="bg-container border border-gray-800 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <p className="text-sm">{item.date}</p>
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        item.status === 'On Time' ? 'bg-emerald-400/10 text-emerald-400' :
-                        item.status === 'Late' ? 'bg-yellow-400/10 text-yellow-400' :
-                        'bg-red-400/10 text-red-400'
-                      }`}>
-                        {item.status}
-                      </span>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-zinc-400 text-xs mb-1">Subject</p>
-                      <p className="font-semibold text-white">{item.subject}</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-zinc-400 text-xs mb-1">Time Clocked-In</p>
-                        <p className="font-semibold">{item.checkIn}</p>
+                    {attendanceRecords.map((item, index) => (
+                      <div key={index} className="bg-container border border-gray-800 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <p className="text-sm">{new Date(item.ts_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: '2-digit'
+                          })}</p>
+                          <span className={`text-xs px-2 py-1 rounded ${item.ts_status === 'On Time' ? 'bg-emerald-400/10 text-emerald-400' :
+                            item.ts_status === 'Late' ? 'bg-yellow-400/10 text-yellow-400' :
+                              'bg-red-400/10 text-red-400'
+                            }`}>
+                            {item.ts_status}
+                          </span>
+                        </div>
+                        <div className="mb-4">
+                          <p className="text-zinc-400 text-xs mb-1">Subject</p>
+                          <p className="font-semibold text-white">{item.ts_subject}</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-zinc-400 text-xs mb-1">Time Clocked-In</p>
+                            <p className="font-semibold">{item.ts_clockedIn || '-'}</p>
+                          </div>
+                          <div>
+                            <p className="text-zinc-400 text-xs mb-1">Time Clocked-Out</p>
+                            <p className="font-semibold">{item.ts_clockedOut || '-'}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-zinc-400 text-xs mb-1">Time Clocked-Out</p>
-                        <p className="font-semibold">{item.checkOut}</p>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
                 </div>
               </div>
             </div>
@@ -349,67 +337,3 @@ export default function Home() {
     </div>
   );
 }
-
-// =======================================================================================================
-
-// FOR INTEGRATING GOOGLE SHEET ATTENDANCE FEATURES
-
-// POST
-
-// function doPost(e) {
-//   var headers = {
-//     "Access-Control-Allow-Origin": "*",
-//     "Access-Control-Allow-Methods": "POST",
-//     "Access-Control-Allow-Headers": "Content-Type"
-//   };
-  
-//   if (e.postData) {
-//     try {
-//       var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-      
-//       var data = JSON.parse(e.postData.contents);
-      
-//       sheet.appendRow([data.timestamp, data.name]);
-      
-//       return ContentService.createTextOutput(JSON.stringify({ success: true }))
-//         .setMimeType(ContentService.MimeType.JSON)
-//         .setHeaders(headers);
-//     } catch (error) {
-//       return ContentService.createTextOutput(JSON.stringify({ 
-//         success: false, 
-//         error: error.toString() 
-//       }))
-//         .setMimeType(ContentService.MimeType.JSON)
-//         .setHeaders(headers);
-//     }
-//   }
-  
-//   return ContentService.createTextOutput("")
-//     .setMimeType(ContentService.MimeType.TEXT)
-//     .setHeaders(headers);
-// }
-
-// =======================================================================================================
-
-// GET
-
-// function doGet(e) {
-//   var sheet = SpreadsheetApp.getActiveSheet();
-//   var data = sheet.getDataRange().getValues();
-  
-//   var formattedData = data.map(function(row) {
-//     return {
-//       timestamp: row[0],
-//       name: row[1]
-//     };
-//   });
-  
-//   var callback = e.parameter.callback;
-  
-//   var response = ContentService.createTextOutput(callback + '(' + JSON.stringify(formattedData) + ')')
-//     .setMimeType(ContentService.MimeType.JAVASCRIPT);
-    
-//   return response;
-// }
-
-// =======================================================================================================

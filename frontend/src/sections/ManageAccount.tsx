@@ -21,16 +21,12 @@ const ManageAccounts: React.FC = () => {
 
 
     const handleCreateSuccess = () => {
-        // Refresh your employee list here
-        // You might want to add a fetchEmployees function
     };
-
-    
 
     const employees = [
         {
-            id: "SAMS-0-000001",
-            name: "Bagus Fikri",
+            id: "SAMS-0-0000056",
+            name: "BAGONI",
             role: "Parent",
             department: "Lebrown Jems A.",
             status: "Pending",

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
 import { AppSidebar } from "@/components/app-sidebar-admin"
@@ -15,9 +15,21 @@ import { Users, Clock, Calendar, Search, Download, UserPlus, TrendingUp, Trendin
 import clsx from 'clsx';
 import MyChart from './componentStyles/MyChart';
 
+interface Account {
+  u_id: number;
+  u_fullname: string;
+  u_role: string;
+  u_department: string;
+  u_email: string;
+  u_contact: string;
+  u_date: string;
+}
+
 const Admin: React.FC = () => {
 
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [accounts, setAccounts] = useState<Account[]>([]);
 
   const fetchUser = async (): Promise<void> => {
     try {
@@ -37,8 +49,26 @@ const Admin: React.FC = () => {
     }
   };
 
+  const fetchAccounts = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:3000/auth/accounts', {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      setAccounts(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching accounts:', error);
+      setLoading(false);
+    }
+  };
+
+
   useEffect(() => {
     fetchUser();
+    fetchAccounts();
   }, []);
 
   const employees = [
@@ -227,43 +257,66 @@ const Admin: React.FC = () => {
                 <table className='w-full'>
                   <thead>
                     <tr className='bg-white/5'>
+                      <th className='px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Account ID</th>
                       <th className='px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Account name</th>
                       <th className='px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Role</th>
                       <th className='hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Department</th>
-                      <th className='px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Status</th>
-                      <th className='hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Action</th>
+                      <th className='px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Contact</th>
                       <th className='hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Joined</th>
                     </tr>
                   </thead>
                   <tbody className='divide-y divide-white/10'>
-                    {employees.map((employee) => (
-                      <tr key={employee.id} className='hover:bg-white/5 transition-colors'>
-                        <td className='px-4 md:px-6 py-4 whitespace-nowrap'>
-                          <div className='flex items-center'>
-                            <Avatar className='h-8 w-8 md:h-10 md:w-10 ring-2 ring-white/10'>
-                              <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${employee.name}`} />
-                              <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div className='ml-4'>
-                              <div className='text-sm font-medium text-white'>{employee.name}</div>
-                              <div className='text-sm text-gray-400'>{employee.id}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className='px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-300'>{employee.role}</td>
-                        <td className='hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-300'>{employee.department}</td>
-                        <td className='px-4 md:px-6 py-4 whitespace-nowrap'>
-                          <span className='px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-400/20 text-green-400'>
-                            {employee.status}
-                          </span>
-                        </td>
-                        <td className='hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-300'>
-                          <div>{employee.email}</div>
-                          <div className='text-gray-400'>{employee.phone}</div>
-                        </td>
-                        <td className='hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-300'>{employee.joined}</td>
+                    {loading ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-4 text-center text-gray-400">Loading accounts...</td>
                       </tr>
-                    ))}
+                    ) : accounts.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-4 text-center text-gray-400">No accounts found</td>
+                      </tr>
+                    ) : (
+                      accounts.map((account) => (
+                        <tr key={account.u_id} className='hover:bg-white/5 transition-colors'>
+                          <td className='px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-300'>
+                            {`SCC-0-${account.u_id.toString().padStart(6, '0')}`}
+                          </td>
+                          <td className='px-4 md:px-6 py-4 whitespace-nowrap'>
+                            <div className='flex items-center'>
+                              <Avatar className='h-8 w-8 md:h-10 md:w-10 ring-2 ring-white/10'>
+                                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${account.u_fullname}`} />
+                                <AvatarFallback>{account.u_fullname.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <div className='ml-4'>
+                                <div className='text-sm font-medium text-white'>{account.u_fullname}</div>
+                                <div className='text-sm text-gray-400'>{account.u_email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className='px-4 md:px-6 py-4 whitespace-nowrap'>
+                            <span className={clsx(
+                              'px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full',
+                              {
+                                'bg-blue-400/20 text-blue-400': account.u_role === 'admin',
+                                'bg-green-400/20 text-green-400': account.u_role === 'student',
+                                'bg-purple-400/20 text-purple-400': account.u_role === 'teacher',
+                                'bg-yellow-400/20 text-yellow-400': account.u_role === 'parent',
+                              }
+                            )}>
+                              {account.u_role.charAt(0).toUpperCase() + account.u_role.slice(1)}
+                            </span>
+                          </td>
+                          <td className='hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-300'>{account.u_department}</td>
+                          <td className='px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-300'>{account.u_contact}</td>
+                          <td className='hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-300'>
+                            {new Date(account.u_date).toLocaleDateString('en-US', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            })}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

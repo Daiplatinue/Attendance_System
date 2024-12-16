@@ -1,22 +1,28 @@
 import React from 'react';
 
-interface UserInfoProps {
-  userData: {
-    u_fullname: string;
-    u_role: string;
-    u_department: string;
-    u_year: string;
-    u_email: string;
-    u_contact: string;
-    u_address: string;
-    u_section: string;
-  };
+interface UserData {
+  u_fullname: string;
+  u_role: string;
+  u_department: string;
+  u_year: string;
+  u_email: string;
+  u_contact: string;
+  u_address: string;
+  u_section: string;
 }
 
-export const UserInfo: React.FC<UserInfoProps> = ({ userData }) => {
+interface UserInfoProps {
+  userData: UserData;
+  parentData?: UserData | null;
+}
+
+export const UserInfo: React.FC<UserInfoProps> = ({ userData, parentData }) => {
   return (
     <div className="flex-grow text-center md:text-left">
       <h2 className="text-2xl sm:text-3xl font-semibold mb-1">{userData.u_fullname}</h2>
+      {parentData && (
+        <p className="text-zinc-400 mb-4">Parent: {parentData.u_fullname}</p>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
         <div className="mt-3 sm:mt-5">
           <p className="text-zinc-400 text-sm mb-1">Section</p>

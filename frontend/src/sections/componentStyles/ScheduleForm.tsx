@@ -27,8 +27,10 @@ const daysOfWeek = [
   { value: 'Wednesday', label: 'Wednesday' },
   { value: 'Thursday', label: 'Thursday' },
   { value: 'Friday', label: 'Friday' },
-  { value: 'Saturday', label: 'Saturday' }
+  { value: 'Saturday', label: 'Saturday' },
+  { value: 'Sunday', label: 'Sunday' }
 ];
+
 
 export function ScheduleForm() {
   const [formData, setFormData] = useState<ScheduleFormData>(initialFormData);

@@ -62,7 +62,7 @@ export default function AllEvents() {
 
   const handleCreateEvent = async (newEvent: Omit<Event, 'id'>) => {
     try {
-      await fetchEvents(); // Refresh the events list after creating a new event
+      await fetchEvents();
     } catch (error) {
       console.error('Error refreshing events:', error);
       toast.error('Failed to refresh events list');
